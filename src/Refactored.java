@@ -27,6 +27,7 @@ public class Refactored extends BaseWindow {
 	FPCameraController camera;
 
 	Terrain t;
+	ModelCharacterObj MCO;
 	IntBuffer m_Textures;
 
 	int mouseX, mouseY, oldMouseX, oldMouseY;
@@ -100,6 +101,7 @@ public class Refactored extends BaseWindow {
 	 */
 	protected void initializeModels() {
 		t = new Terrain();
+		MCO = new ModelCharacterObj();
 		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png" });
 	}
 
