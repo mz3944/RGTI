@@ -103,11 +103,21 @@ public class ModelCharacterObj extends Model3D {
 		for (int i = 0; i < quads.size(); i++)
 		{
 			Quad quad = quads.get(i);
-			GL11.glColor3f(1, 0, 0);
 			
+			GL11.glTexCoord2f(textures.get(quad.a.itexture).getX(), textures.get(quad.a.itexture).getY());
+			GL11.glNormal3f(normals.get(quad.a.inormal).getX(), normals.get(quad.a.inormal).getY(), normals.get(quad.a.inormal).getZ());
 			GL11.glVertex3f(vertex.get(quad.a.ivertex).getX(), vertex.get(quad.a.ivertex).getY(), vertex.get(quad.a.ivertex).getZ());
+			
+			GL11.glTexCoord2f(textures.get(quad.b.itexture).getX(), textures.get(quad.b.itexture).getY());
+			GL11.glNormal3f(normals.get(quad.b.inormal).getX(), normals.get(quad.b.inormal).getY(), normals.get(quad.b.inormal).getZ());
 			GL11.glVertex3f(vertex.get(quad.b.ivertex).getX(), vertex.get(quad.b.ivertex).getY(), vertex.get(quad.b.ivertex).getZ());
+			
+			GL11.glTexCoord2f(textures.get(quad.c.itexture).getX(), textures.get(quad.c.itexture).getY());
+			GL11.glNormal3f(normals.get(quad.c.inormal).getX(), normals.get(quad.c.inormal).getY(), normals.get(quad.c.inormal).getZ());
 			GL11.glVertex3f(vertex.get(quad.c.ivertex).getX(), vertex.get(quad.c.ivertex).getY(), vertex.get(quad.c.ivertex).getZ());
+			
+			GL11.glTexCoord2f(textures.get(quad.d.itexture).getX(), textures.get(quad.d.itexture).getY());
+			GL11.glNormal3f(normals.get(quad.d.inormal).getX(), normals.get(quad.d.inormal).getY(), normals.get(quad.d.inormal).getZ());
 			GL11.glVertex3f(vertex.get(quad.d.ivertex).getX(), vertex.get(quad.d.ivertex).getY(), vertex.get(quad.d.ivertex).getZ());
 		}  
 	    GL11.glEnd();
