@@ -1,15 +1,13 @@
 
-public class Quad {
+public class Polygon {
 	FaceVTN a;
 	FaceVTN b;
 	FaceVTN c;
-	FaceVTN d;
 	
-	public Quad(FaceVTN a, FaceVTN b, FaceVTN c, FaceVTN d){
+	public Polygon(FaceVTN a, FaceVTN b, FaceVTN c){
 		this.a = a;
 		this.b = b;
 		this.c = c;
-		this.d = d;
 	} 
 	
 	FaceVTN getVertexA(){
@@ -24,10 +22,6 @@ public class Quad {
 		return c;
 	}
 	
-	FaceVTN getVertexD(){
-		return d;
-	}
-	
 	void setVertexA(FaceVTN x){
 		a = x;
 	}
@@ -38,9 +32,5 @@ public class Quad {
 
 	void setVertexC(FaceVTN x){
 		c = x;
-	}
-	
-	void setVertexD(FaceVTN x){
-		d = x;
 	}
 }
