@@ -130,7 +130,7 @@ public class Refactored extends BaseWindow {
 		t.setRotation(rotX, rotY, rotZ);
 		t.setScaling(scale, scale, scale);
 
-		MCO.setPosition(0,0,0);
+		MCO.setPosition(0,5,0);
 		MCO.setRotation(rotX, rotY, rotZ);
 		MCO.setScaling(scale, scale, scale);
 		

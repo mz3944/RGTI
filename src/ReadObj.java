@@ -18,27 +18,28 @@ public class ReadObj {
 			FileInputStream fis = new FileInputStream(filepath);
 			DataInputStream dis = new DataInputStream(fis);
 			String s = "";
+			float resize = 0.04f;
 			while((s = dis.readLine()) != null){
 				String [] niz = s.split(" ");
 				for (int i = 0; i < niz.length; i++){
 					if(niz[0].equals("v") || niz[0].equals("vn") || niz[0].equals("vt") || niz[0].equals("f")){
 						if(niz[0].equals("v")){
-							float x = Float.parseFloat(niz[i+1]);
-							float y = Float.parseFloat(niz[i+2]);
-							float z = Float.parseFloat(niz[i+3]);
+							float x = Float.parseFloat(niz[i+1]) * resize;
+							float y = Float.parseFloat(niz[i+2]) * resize;
+							float z = Float.parseFloat(niz[i+3]) * resize;
 							vertex.add(new Point4f(x,y,z,1));
 							i += 4;
 						}
 						else if(niz[0].equals("vn")){
-							float x = Float.parseFloat(niz[i+1]);
-							float y = Float.parseFloat(niz[i+2]);
-							float z = Float.parseFloat(niz[i+3]);
+							float x = Float.parseFloat(niz[i+1]) * resize;
+							float y = Float.parseFloat(niz[i+2]) * resize;
+							float z = Float.parseFloat(niz[i+3]) * resize;
 							normals.add(new Point4f(x,y,z,1));
 							i += 3;
 						}
 						else if (niz[0].equals("vt")){
-							float x = Float.parseFloat(niz[i+1]);
-							float y = Float.parseFloat(niz[i+2]);
+							float x = Float.parseFloat(niz[i+1]) * resize;
+							float y = Float.parseFloat(niz[i+2]) * resize;
 							//float z = Float.parseFloat(niz[i+3]);
 							textures.add(new Point4f(x,y,1,1));
 							i += 3;
@@ -46,21 +47,21 @@ public class ReadObj {
 						else if (niz[0].equals("f")){
 							if (niz.length == 5){
 								String [] numbers = niz[i+1].split("/");
-								int va = Integer.parseInt(numbers[1]);
-								int ta = Integer.parseInt(numbers[0]);
-								int na = Integer.parseInt(numbers[2]);
+								int va = Integer.parseInt(numbers[0])-1;
+								int ta = Integer.parseInt(numbers[1])-1;
+								int na = Integer.parseInt(numbers[2])-1;
 								numbers = niz[i+2].split("/");
-								int vb = Integer.parseInt(numbers[1]);
-								int tb = Integer.parseInt(numbers[0]);
-								int nb = Integer.parseInt(numbers[2]);
+								int vb = Integer.parseInt(numbers[0])-1;
+								int tb = Integer.parseInt(numbers[1])-1;
+								int nb = Integer.parseInt(numbers[2])-1;
 								numbers = niz[i+3].split("/");
-								int vc = Integer.parseInt(numbers[1]);
-								int tc = Integer.parseInt(numbers[0]);
-								int nc = Integer.parseInt(numbers[2]);
+								int vc = Integer.parseInt(numbers[0])-1;
+								int tc = Integer.parseInt(numbers[1])-1;
+								int nc = Integer.parseInt(numbers[2])-1;
 								numbers = niz[i+4].split("/");
-								int vd = Integer.parseInt(numbers[1]);
-								int td = Integer.parseInt(numbers[0]);
-								int nd = Integer.parseInt(numbers[2]);
+								int vd = Integer.parseInt(numbers[0])-1;
+								int td = Integer.parseInt(numbers[1])-1;
+								int nd = Integer.parseInt(numbers[2])-1;
 								FaceVTN a = new FaceVTN(va,ta,na);
 								FaceVTN b = new FaceVTN(vb,tb,nb);
 								FaceVTN c = new FaceVTN(vc,tc,nc);
@@ -71,17 +72,17 @@ public class ReadObj {
 							}
 							else{
 								String [] numbers = niz[i+1].split("/");
-								int va = Integer.parseInt(numbers[0]);
-								int ta = Integer.parseInt(numbers[1]);
-								int na = Integer.parseInt(numbers[2]);
+								int va = Integer.parseInt(numbers[0])-1;
+								int ta = Integer.parseInt(numbers[1])-1;
+								int na = Integer.parseInt(numbers[2])-1;
 								numbers = niz[i+2].split("/");
-								int vb = Integer.parseInt(numbers[0]);
-								int tb = Integer.parseInt(numbers[1]);
-								int nb = Integer.parseInt(numbers[2]);
+								int vb = Integer.parseInt(numbers[0])-1;
+								int tb = Integer.parseInt(numbers[1])-1;
+								int nb = Integer.parseInt(numbers[2])-1;
 								numbers = niz[i+3].split("/");
-								int vc = Integer.parseInt(numbers[0]);
-								int tc = Integer.parseInt(numbers[1]);
-								int nc = Integer.parseInt(numbers[2]);
+								int vc = Integer.parseInt(numbers[0])-1;
+								int tc = Integer.parseInt(numbers[1])-1;
+								int nc = Integer.parseInt(numbers[2])-1;
 								FaceVTN a = new FaceVTN(va,ta,na);
 								FaceVTN b = new FaceVTN(vb,tb,nb);
 								FaceVTN c = new FaceVTN(vc,tc,nc);
