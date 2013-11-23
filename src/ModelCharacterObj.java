@@ -42,7 +42,7 @@ public class ModelCharacterObj extends Model3D {
 		
 	}
 	void renderModel(){
-		initializeModel();
+//		initializeModel();
 		
 		GL11.glBegin(GL11.GL_TRIANGLE_STRIP); // draw triangels
 		for (int i = 0; i < polygons.size(); i++)

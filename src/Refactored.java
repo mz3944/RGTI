@@ -110,6 +110,7 @@ public class Refactored extends BaseWindow {
 		t = new Terrain();
 		MCO = new ModelCharacterObj();
 		t.initialize();
+		MCO.initializeModel();
 		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png" });
 	}
 
