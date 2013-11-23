@@ -109,7 +109,7 @@ public class Refactored extends BaseWindow {
 	protected void initializeModels() {
 		t = new Terrain();
 		t.initialize();
-		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png" });// grass20_128.png
+		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png" });
 	}
 
 	/**
