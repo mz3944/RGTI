@@ -95,13 +95,12 @@ public class Refactored extends BaseWindow {
 		Mouse.setGrabbed(true);
 
 	}
-
 	/**
 	 * can be used for 3D model initialization
 	 */
 	protected void initializeModels() {
 		t = new Terrain();
-		//MCO = new ModelCharacterObj();
+		MCO = new ModelCharacterObj();
 		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png" });
 	}
 
@@ -122,15 +121,15 @@ public class Refactored extends BaseWindow {
 		t.setRotation(rotX, rotY, rotZ);
 		t.setScaling(scale, scale, scale);
 
-		//MCO.setPosition(0,0,0);
-		//MCO.setRotation(rotX, rotY, rotZ);
-		//MCO.setScaling(scale, scale, scale);
+		MCO.setPosition(0,0,0);
+		MCO.setRotation(rotX, rotY, rotZ);
+		MCO.setScaling(scale, scale, scale);
 		
 		GL11.glMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT_AND_DIFFUSE,
 				allocFloats(new float[] { 1.0f, 1.0f, 0.5f, 0.8f }));
 
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(0));
-		//MCO.render3D();
+		MCO.render3D();
 		t.render3D();
 
 	}
