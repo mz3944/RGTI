@@ -29,7 +29,7 @@ public class FPCameraController {
 	// increment the camera's current yaw rotation
 	public void pitch(float amount) {
 		// increment the pitch by the amount param
-		pitch -= amount;System.out.println(pitch);
+		pitch -= amount;
 		if(pitch > 45)
 			pitch = 45;
 		else if(pitch < -45)
