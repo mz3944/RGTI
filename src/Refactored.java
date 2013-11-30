@@ -108,7 +108,7 @@ public class Refactored extends BaseWindow {
 	 */
 	protected void initializeModels() {
 		t = new Terrain();
-		MCO = new ModelCharacterObj();
+		MCO = new ModelCharacterObj(posX,posY,posZ);
 		t.initialize();
 		MCO.initializeModel();
 		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png" });
@@ -129,10 +129,14 @@ public class Refactored extends BaseWindow {
 		t.setPosition(-(t.MAP_X / 2 - 1), 0, -(t.MAP_Z / 2 - 1));
 		t.setRotation(rotX, rotY, rotZ);
 		t.setScaling(scale, scale, scale);
-
-		MCO.setPosition(0,5,0);
-		MCO.setRotation(rotX, rotY, rotZ);
+		
+		//float [] p = MCO.getPosition();
+		float [] cam = camera.getPosition();
+		
+		MCO.setPosition(-cam[0],-cam[1]-5,-cam[2]-5);
+		MCO.setRotation(rotX,rotY, rotZ);
 		MCO.setScaling(scale, scale, scale);
+		//MCO.cameraFollowCharacter();
 		
 		GL11.glMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT_AND_DIFFUSE,
 				allocFloats(new float[] { 1.0f, 1.0f, 0.5f, 0.8f }));
@@ -158,42 +162,55 @@ public class Refactored extends BaseWindow {
 
 		// controll camera yaw from x movement fromt the mouse
 		camera.yaw(dx * mouseSensitivity);
+		//MCO.yaw(dx * mouseSensitivity);
+		
 		// controll camera pitch from y movement fromt the mouse
 		camera.pitch(dy * mouseSensitivity);
-
+		//MCO.pitch(dy * mouseSensitivity);
 		if (Keyboard.isKeyDown(Keyboard.KEY_W))// move forward
 		{
 			camera.walkForward(movementSpeed * dt);
+			//MCO.walkBackwards(movementSpeed * dt);
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_S))// move backwards
 		{
 			camera.walkBackwards(movementSpeed * dt);
+			//MCO.walkForward(movementSpeed * dt);
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_A))// strafe left
 		{
 			camera.strafeLeft(movementSpeed * dt);
+			//MCO.strafeRight(movementSpeed * dt);
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_D))// strafe right
 		{
 			camera.strafeRight(movementSpeed * dt);
+			//MCO.strafeLeft(movementSpeed * dt);
 		}
-
-		camera.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE,
-				distanceView);
+		//MCO.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
+		camera.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
 		float[] cameraPos = camera.getPosition();
+		/*float[] charPos = MCO.getPosition();
+		float[][] triangle = t
+				.getTrinagleLocation(-charPos[0], -charPos[2]);
+		MCO.calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);*/
 		float[][] triangle = t
 				.getTrinagleLocation(-cameraPos[0], -cameraPos[2]);
 		camera.calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);
-
+		
+		
+		/*t.setVisibleArea((int) -charPos[0], (int) -charPos[2],
+				distanceView, angleView, MCO.getJaw(), backDistanceView);*/
+		
 		t.setVisibleArea((int) -cameraPos[0], (int) -cameraPos[2],
 				distanceView, angleView, camera.getJaw(), backDistanceView);
-
+		
 		// set the modelview matrix back to the identity
 		GL11.glLoadIdentity();
 
 		// look through the camera before you draw anything
 		camera.lookThrough();
-
+		//MCO.lookThrough();
 		super.processInput();
 	}
 

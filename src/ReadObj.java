@@ -18,7 +18,7 @@ public class ReadObj {
 			FileInputStream fis = new FileInputStream(filepath);
 			DataInputStream dis = new DataInputStream(fis);
 			String s = "";
-			float resize = 0.04f;
+			float resize = 0.025f;
 			while((s = dis.readLine()) != null){
 				String [] niz = s.split(" ");
 				for (int i = 0; i < niz.length; i++){
