@@ -8,9 +8,9 @@ import org.lwjgl.util.glu.GLU;
 
 public class Refactored extends BaseWindow {
 
-	float posX = 0, posY = 0, posZ = 0, rotX = 0, rotY = 0, rotZ = 0,
+	float posX = 0, posY = 3, posZ = 0, rotX = 0, rotY = 0, rotZ = 0,
 			scale = 1;
-	float camPosX = 0.0f, camPosY = -10.0f, camPosZ = 0.0f, camRotX = 0.0f,
+	float camPosX = 0.0f, camPosY = 7.0f, camPosZ = 10.0f, camRotX = 0.0f,
 			camRotY = 0, camRotZ = 0;
 	float lean = 0.0f;
 	boolean leanL = false, leanR = false;
@@ -25,7 +25,8 @@ public class Refactored extends BaseWindow {
 	float time = 0.0f;
 
 	float mouseSensitivity = 0.05f;
-	float movementSpeed = 10.0f; // move 10 units per second
+	float movementSpeed = 8.0f; // move 10 units per second
+	float rotateSpeed = 50.0f; // move mili degree per second
 
 	FPCameraController camera;
 
@@ -110,6 +111,11 @@ public class Refactored extends BaseWindow {
 		t = new Terrain();
 		MCO = new ModelCharacterObj(posX,posY,posZ);
 		t.initialize();
+		
+		t.setPosition(-(t.MAP_X / 2 - 1), 0, -(t.MAP_Z / 2 - 1));
+		t.setRotation(rotX, rotY, rotZ);
+		t.setScaling(scale, scale, scale);
+
 		MCO.initializeModel();
 		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png" });
 	}
@@ -126,23 +132,23 @@ public class Refactored extends BaseWindow {
 	 * Renders current frame
 	 */
 	protected void renderFrame() {
-		t.setPosition(-(t.MAP_X / 2 - 1), 0, -(t.MAP_Z / 2 - 1));
+/*		t.setPosition(-(t.MAP_X / 2 - 1), 0, -(t.MAP_Z / 2 - 1));
 		t.setRotation(rotX, rotY, rotZ);
 		t.setScaling(scale, scale, scale);
-		
+		*/
 		//float [] p = MCO.getPosition();
 		float [] cam = camera.getPosition();
 		
-		MCO.setPosition(-cam[0],-cam[1]-5,-cam[2]-5);
-		MCO.setRotation(rotX,rotY, rotZ);
-		MCO.setScaling(scale, scale, scale);
+		//MCO.setPosition(-cam[0],-cam[1]-5,-cam[2]-5);
+		//MCO.setRotation(rotX,MCO.getJaw(), rotZ);
+		//MCO.setScaling(scale, scale, scale);
 		//MCO.cameraFollowCharacter();
 		
+		MCO.render3D();
 		GL11.glMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT_AND_DIFFUSE,
 				allocFloats(new float[] { 1.0f, 1.0f, 0.5f, 0.8f }));
 
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(0));
-		MCO.render3D();
 		t.render3D();
 	}
 
@@ -161,7 +167,16 @@ public class Refactored extends BaseWindow {
 		dy = Mouse.getDY();
 
 		// controll camera yaw from x movement fromt the mouse
-		camera.yaw(dx * mouseSensitivity);
+		// object rotate
+		if (Keyboard.isKeyDown(Keyboard.KEY_Q))// move forward
+		{
+			camera.yaw(movementSpeed * -dt);
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_E))// move backwards
+		{
+			camera.yaw(movementSpeed * dt);
+		}
+		//camera.yaw(dx * mouseSensitivity);
 		//MCO.yaw(dx * mouseSensitivity);
 		
 		// controll camera pitch from y movement fromt the mouse
@@ -170,47 +185,78 @@ public class Refactored extends BaseWindow {
 		if (Keyboard.isKeyDown(Keyboard.KEY_W))// move forward
 		{
 			camera.walkForward(movementSpeed * dt);
-			//MCO.walkBackwards(movementSpeed * dt);
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_S))// move backwards
 		{
 			camera.walkBackwards(movementSpeed * dt);
-			//MCO.walkForward(movementSpeed * dt);
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_A))// strafe left
 		{
 			camera.strafeLeft(movementSpeed * dt);
-			//MCO.strafeRight(movementSpeed * dt);
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_D))// strafe right
 		{
 			camera.strafeRight(movementSpeed * dt);
-			//MCO.strafeLeft(movementSpeed * dt);
 		}
-		//MCO.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
-		camera.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
-		float[] cameraPos = camera.getPosition();
+		// object rotate
+		if (Keyboard.isKeyDown(Keyboard.KEY_U))// move forward
+		{
+			MCO.yaw(rotateSpeed * dt);
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_O))// move backwards
+		{
+			MCO.yaw(rotateSpeed * -dt);
+		}
+        // OBJECT move
+		if (Keyboard.isKeyDown(Keyboard.KEY_K))// move forward
+		{
+			MCO.walkBackwards(movementSpeed * dt);
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_I))// move backwards
+		{
+			MCO.walkForward(movementSpeed * dt);
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_L))// strafe left
+		{
+			MCO.strafeRight(movementSpeed * dt);
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_J))// strafe right
+		{
+			MCO.strafeLeft(movementSpeed * dt);
+		}
+
+		
+		float[] objPos = MCO.getPosition();
+		float[][] triangle = t
+				.getTrinagleLocation(objPos[0], objPos[2]);
+		MCO.calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);
+        MCO.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
+    	camera.CamOnObjPossition(MCO.getPosition(), MCO.getJaw());
+		//camera.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
 		/*float[] charPos = MCO.getPosition();
 		float[][] triangle = t
 				.getTrinagleLocation(-charPos[0], -charPos[2]);
 		MCO.calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);*/
-		float[][] triangle = t
-				.getTrinagleLocation(-cameraPos[0], -cameraPos[2]);
-		camera.calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);
 		
 		
 		/*t.setVisibleArea((int) -charPos[0], (int) -charPos[2],
 				distanceView, angleView, MCO.getJaw(), backDistanceView);*/
+    	
+		float[] cameraPos = camera.getPosition();
+		triangle = t.getTrinagleLocation(-cameraPos[0], -cameraPos[2]);
+		camera.calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);
 		
-		t.setVisibleArea((int) -cameraPos[0], (int) -cameraPos[2],
+        t.setVisibleArea((int) -cameraPos[0], (int) -cameraPos[2],
 				distanceView, angleView, camera.getJaw(), backDistanceView);
 		
 		// set the modelview matrix back to the identity
 		GL11.glLoadIdentity();
 
-		// look through the camera before you draw anything
-		camera.lookThrough();
 		//MCO.lookThrough();
+		// look through the camera before you draw anything
+		//float[] objPos = MCO.getPosition();
+			//GLU.gluLookAt(objPos[0], objPos[1], objPos[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);		
+		camera.lookThrough();
 		super.processInput();
 	}
 

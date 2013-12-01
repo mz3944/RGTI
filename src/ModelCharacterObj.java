@@ -49,6 +49,7 @@ public class ModelCharacterObj extends Model3D {
 	public void yaw(float amount) {
 		// increment the yaw by the amount param
 		yaw += amount;
+	//	System.out.println("Obj yaw:" + Float.toString(yaw));
 	}
 	
 	public float getJaw() {
@@ -71,38 +72,32 @@ public class ModelCharacterObj extends Model3D {
 
 	// moves the camera forward relative to its current rotation (yaw)
 	public void walkForward(float distance) {
-		position[0] -= distance * (float) Math.sin(Math.toRadians(yaw));
+		position[0] += distance * (float) Math.sin(Math.toRadians(yaw));
 		position[2] += distance * (float) Math.cos(Math.toRadians(yaw));
+//		System.out.println("Forw obj X:" + Float.toString(position[0]) + ", Z:" + Float.toString(position[2]));
 	}
 
 	// moves the camera backward relative to its current rotation (yaw)
 	public void walkBackwards(float distance) {
-		position[0] += distance * (float) Math.sin(Math.toRadians(yaw));
-		position[2] -= distance * (float) Math.cos(Math.toRadians(yaw));
+		position[0] += distance * (float) Math.sin(Math.toRadians(yaw + 180));
+		position[2] += distance * (float) Math.cos(Math.toRadians(yaw + 180));
+	//	System.out.println("Back obj X:" + Float.toString(position[0]) + ", Z:" + Float.toString(position[2]));
 	}
 
 	// strafes the camera left relitive to its current rotation (yaw)
 	public void strafeLeft(float distance) {
-		position[0] -= distance * (float) Math.sin(Math.toRadians(yaw - 90));
-		position[2] += distance * (float) Math.cos(Math.toRadians(yaw - 90));
+		position[0] += distance * (float) Math.sin(Math.toRadians(yaw + 90));
+		position[2] += distance * (float) Math.cos(Math.toRadians(yaw + 90));
+//		System.out.println("Left obj X:" + Float.toString(position[0]) + ", Z:" + Float.toString(position[2]));
 	}
 
 	// strafes the camera right relitive to its current rotation (yaw)
 	public void strafeRight(float distance) {
-		position[0] -= distance * (float) Math.sin(Math.toRadians(yaw + 90));
-		position[2] += distance * (float) Math.cos(Math.toRadians(yaw + 90));
+		position[0] += distance * (float) Math.sin(Math.toRadians(yaw - 90));
+		position[2] += distance * (float) Math.cos(Math.toRadians(yaw - 90));
+//		System.out.println("Righ obj X:" + Float.toString(position[0]) + ", Z:" + Float.toString(position[2]));
 	}
 	
-	// translates and rotate the matrix so that it looks through the camera
-	// this dose basic what gluLookAt() does
-	public void lookThrough() {
-		// roatate the pitch around the X axis
-		GL11.glRotatef(pitch, 1.0f, 0.0f, 0.0f);
-		// roatate the yaw around the Y axis
-		GL11.glRotatef(yaw, 0.0f, 1.0f, 0.0f);
-		// translate to the position vector's location
-		GL11.glTranslatef(position[0], position[1], position[2]);
-	}
 	
 	public void cameraFollowCharacter(){
 		float camX, camY, camZ;
@@ -125,41 +120,40 @@ public class ModelCharacterObj extends Model3D {
 			position[2] = -(z/2 - distanceView);
 	}
 	
-	public void calcY(float[] p1, float[] p2, float[] p3, int MAP_X, int MAP_Z) {	
-		float det = (p2[2] - p3[2]) * (p1[0] - p3[0]) + (p3[0] - p2[0]) * (p1[2] - p3[2]);
-		
-		float l1 = ((p2[2] - p3[2]) * (-position[0] - p3[0]) + (p3[0] - p2[0]) * (-position[2] - p3[2])) / det;
-		float l2 = ((p3[2] - p1[2]) * (-position[0] - p3[0]) + (p1[0] - p3[0]) * (-position[2] - p3[2])) / det;
-		float l3 = 1.0f - l1 - l2;
-		
-		position[1] = -(l1 * p1[1] + l2 * p2[1] + l3 * p3[1]);
-		position[1] -= 5.0f;
+	public void calcY(float[] p1, float[] p2, float[] p3, int MAP_X, int MAP_Z) {
+		float max12 = Math.max(p1[1], p2[1]);
+		float maxY  = Math.max(p3[1], max12);
+	    position[1] = maxY + 0.3f;
 	}
 	
+	// translates and rotate the matrix so that it looks through the camera
+	// this dose basic what gluLookAt() does
+	public void lookThrough() {
+		// roatate the pitch around the X axis
+		GL11.glRotatef(pitch, 1.0f, 0.0f, 0.0f);
+		// roatate the yaw around the Y axis
+		GL11.glRotatef(yaw, 0.0f, 1.0f, 0.0f);
+		// translate to the position vector's location
+	//	GL11.glTranslatef(position[0], position[1], position[2]);
+	}
+
 	@Override
 	public void render3D() {
-		float [] p = getPosition();
+	//	float [] p = getPosition();
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 
 		// save current matrix
 		GL11.glPushMatrix();
 
+		//NOTE!!!!!!  
 		// TRANSLATE
-		GL11.glTranslatef(p[0], p[1], p[2]);
+		GL11.glTranslatef(position[0], position[1], position[2]);
 		
 		// ROTATE and SCALE
-		GL11.glTranslatef(-p[0],-p[1] ,-p[2]);
-		if (m_rZ != 0)
-			GL11.glRotatef(m_rZ, 0, 0, 1);
-		if (m_rY != 0)
-			GL11.glRotatef(m_rY, 0, 1, 0);
-		if (m_rX != 0)
-			GL11.glRotatef(m_rX, 1, 0, 0);
-		if (m_sX != 1 || m_sY != 1 || m_sZ != 1)
-			GL11.glScalef(m_sX, m_sY, m_sZ);
-		GL11.glTranslatef(p[0], p[1], p[2]);
-		renderModel();
+		GL11.glRotatef(yaw, 0, 1, 0);
+		GL11.glTranslatef(0.0f, 0.0f , 0.0f);
 
+  	    renderModel();
 		// discard current matrix
 		GL11.glPopMatrix();
 		

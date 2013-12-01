@@ -51,6 +51,7 @@ public class Terrain extends Model3D {
 		if (m_sX != 1 || m_sY != 1 || m_sZ != 1)
 			GL11.glScalef(m_sX, m_sY, m_sZ);
 		GL11.glTranslatef(0, 0, 3.5f);
+//		GL11.glTranslatef(m_nX, m_nY, m_nZ);
 
 		renderModel();
 
