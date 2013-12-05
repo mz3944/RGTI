@@ -28,11 +28,20 @@ public class Refactored extends BaseWindow {
 	float movementSpeed = 8.0f; // move 10 units per second
 	float rotateSpeed = 50.0f; // move mili degree per second
 
+	
+	float scaleChar = 0.025f;
+	float scaleTree = 1f;
+	float scaleGrave = 0.3f;
 	FPCameraController camera;
 
 	Terrain t;
 	ModelCharacterObj MCO;
 	IntBuffer m_Textures;
+	StatusBar SB;
+	ObjectTree OT;
+	ObjectGrave OG;
+	ObjectGrave OG1;
+	ObjectGrave1 OG2;
 
 	int mouseX, mouseY, oldMouseX, oldMouseY;
 
@@ -110,14 +119,19 @@ public class Refactored extends BaseWindow {
 	protected void initializeModels() {
 		t = new Terrain();
 		MCO = new ModelCharacterObj(posX,posY,posZ);
+		SB = new StatusBar();
+		OT = new ObjectTree();
+		OG = new ObjectGrave();
+		OG1 = new ObjectGrave();
+		OG2 = new ObjectGrave1();
 		t.initialize();
-		
-		t.setPosition(-(t.MAP_X / 2 - 1), 0, -(t.MAP_Z / 2 - 1));
-		t.setRotation(rotX, rotY, rotZ);
-		t.setScaling(scale, scale, scale);
+		OT.initializeModel();
+		OG.initializeModel();
+		OG1.initializeModel();
+		OG2.initializeModel();
 
 		MCO.initializeModel();
-		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png" });
+		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png", "grave.jpg", "grave1.jpg" });
 	}
 
 	/**
@@ -132,24 +146,33 @@ public class Refactored extends BaseWindow {
 	 * Renders current frame
 	 */
 	protected void renderFrame() {
-/*		t.setPosition(-(t.MAP_X / 2 - 1), 0, -(t.MAP_Z / 2 - 1));
+		t.setPosition(-(t.MAP_X / 2 - 1), 0, -(t.MAP_Z / 2 - 1));
 		t.setRotation(rotX, rotY, rotZ);
 		t.setScaling(scale, scale, scale);
-		*/
-		//float [] p = MCO.getPosition();
-		float [] cam = camera.getPosition();
 		
+		//float [] p = MCO.getPosition();
+		//float [] cam = camera.getPosition();
+		OT.setPosition(0, 5, 5);
+		OT.setScaling(scaleTree, scaleTree, scaleTree);
+		OG.setPosition(3, 7, 10);
+		OG.setScaling(scaleGrave, scaleGrave, scaleGrave);
+		OG1.setPosition(-3, 7, 10);
+		OG1.setScaling(scaleGrave, scaleGrave, scaleGrave);
 		//MCO.setPosition(-cam[0],-cam[1]-5,-cam[2]-5);
 		//MCO.setRotation(rotX,MCO.getJaw(), rotZ);
-		//MCO.setScaling(scale, scale, scale);
+		MCO.setScaling(scaleChar, scaleChar, scaleChar);
 		//MCO.cameraFollowCharacter();
-		
-		MCO.render3D();
 		GL11.glMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT_AND_DIFFUSE,
 				allocFloats(new float[] { 1.0f, 1.0f, 0.5f, 0.8f }));
 
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(0));
 		t.render3D();
+		MCO.render3D();
+		//OT.render3D();
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(1));
+		OG.render3D();
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(2));
+		OG1.render3D();
 	}
 
 	/**
@@ -178,6 +201,8 @@ public class Refactored extends BaseWindow {
 		}
 		//camera.yaw(dx * mouseSensitivity);
 		//MCO.yaw(dx * mouseSensitivity);
+		MCO.yaw(mouseSensitivity * -dx);
+		
 		
 		// controll camera pitch from y movement fromt the mouse
 		camera.pitch(dy * mouseSensitivity);
@@ -201,11 +226,11 @@ public class Refactored extends BaseWindow {
 		// object rotate
 		if (Keyboard.isKeyDown(Keyboard.KEY_U))// move forward
 		{
-			MCO.yaw(rotateSpeed * dt);
+			//MCO.yaw(rotateSpeed * dt);
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_O))// move backwards
 		{
-			MCO.yaw(rotateSpeed * -dt);
+			//MCO.yaw(rotateSpeed * -dt);
 		}
         // OBJECT move
 		if (Keyboard.isKeyDown(Keyboard.KEY_K))// move forward
@@ -232,6 +257,9 @@ public class Refactored extends BaseWindow {
 		MCO.calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);
         MCO.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
     	camera.CamOnObjPossition(MCO.getPosition(), MCO.getJaw());
+    	
+    	//triangle = t.getTrinagleLocation(OG.m_nX, OG.m_nZ);
+    	//OG.calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);
 		//camera.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
 		/*float[] charPos = MCO.getPosition();
 		float[][] triangle = t

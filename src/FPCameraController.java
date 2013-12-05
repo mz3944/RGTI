@@ -32,10 +32,10 @@ public class FPCameraController {
         float dy = -(-position[1] - objposition[1] - 3.0f);
         float atan = (float) Math.atan(dy/dist2obj);
         pitch = (float) -Math.toDegrees(atan); 
-    	System.out.println("objY" + Float.toString(objposition[1]) + "camY" + Float.toString(position[1]) 
+    	/*System.out.println("objY" + Float.toString(objposition[1]) + "camY" + Float.toString(position[1]) 
               //  + ", Folow cam pitch:" + Float.toString(ppitch) 
     			                  + ", pitch:" + Float.toString(pitch) 
-    			                  + ", atan:" + Float.toString(atan) + ", dy=" + Float.toString(dy) );
+    			                  + ", atan:" + Float.toString(atan) + ", dy=" + Float.toString(dy) );*/
 	}
 
 	// increment the camera's current yaw rotation

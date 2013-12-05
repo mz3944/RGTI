@@ -12,34 +12,33 @@ public class ReadObj {
 	List <Point4f> normals = new LinkedList<Point4f>();
 	List <Point4f> textures = new LinkedList<Point4f>();
 	List <Polygon> polygons = new LinkedList<Polygon>();
-	public void getModelObj(){
+	public void getModelObj(String objectName){
 		try{
-			String filepath = "basemesh_fuse.obj";
+			String filepath = objectName;
 			FileInputStream fis = new FileInputStream(filepath);
 			DataInputStream dis = new DataInputStream(fis);
 			String s = "";
-			float resize = 0.025f;
 			while((s = dis.readLine()) != null){
 				String [] niz = s.split(" ");
 				for (int i = 0; i < niz.length; i++){
 					if(niz[0].equals("v") || niz[0].equals("vn") || niz[0].equals("vt") || niz[0].equals("f")){
 						if(niz[0].equals("v")){
-							float x = Float.parseFloat(niz[i+1]) * resize;
-							float y = Float.parseFloat(niz[i+2]) * resize;
-							float z = Float.parseFloat(niz[i+3]) * resize;
+							float x = Float.parseFloat(niz[i+1]);
+							float y = Float.parseFloat(niz[i+2]);
+							float z = Float.parseFloat(niz[i+3]);
 							vertex.add(new Point4f(x,y,z,1));
 							i += 4;
 						}
 						else if(niz[0].equals("vn")){
-							float x = Float.parseFloat(niz[i+1]) * resize;
-							float y = Float.parseFloat(niz[i+2]) * resize;
-							float z = Float.parseFloat(niz[i+3]) * resize;
+							float x = Float.parseFloat(niz[i+1]);
+							float y = Float.parseFloat(niz[i+2]);
+							float z = Float.parseFloat(niz[i+3]);
 							normals.add(new Point4f(x,y,z,1));
 							i += 3;
 						}
 						else if (niz[0].equals("vt")){
-							float x = Float.parseFloat(niz[i+1]) * resize;
-							float y = Float.parseFloat(niz[i+2]) * resize;
+							float x = Float.parseFloat(niz[i+1]);
+							float y = Float.parseFloat(niz[i+2]);
 							//float z = Float.parseFloat(niz[i+3]);
 							textures.add(new Point4f(x,y,1,1));
 							i += 3;

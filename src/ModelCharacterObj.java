@@ -29,7 +29,7 @@ public class ModelCharacterObj extends Model3D {
 	
 	void initializeModel(){
 		ReadObj obj = new ReadObj();
-		obj.getModelObj();
+		obj.getModelObj("basemesh_fuse.obj");
 		vertex = obj.vertex;
 		normals = obj.normals;
 		textures = obj.textures;
@@ -150,9 +150,9 @@ public class ModelCharacterObj extends Model3D {
 		GL11.glTranslatef(position[0], position[1], position[2]);
 		
 		// ROTATE and SCALE
+		GL11.glScalef(m_sX, m_sY, m_sZ);
 		GL11.glRotatef(yaw, 0, 1, 0);
 		GL11.glTranslatef(0.0f, 0.0f , 0.0f);
-
   	    renderModel();
 		// discard current matrix
 		GL11.glPopMatrix();
