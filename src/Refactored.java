@@ -32,6 +32,7 @@ public class Refactored extends BaseWindow {
 	float scaleChar = 0.025f;
 	float scaleTree = 1f;
 	float scaleGrave = 0.3f;
+	float scaleAxe = 0.02f;
 	FPCameraController camera;
 
 	Terrain t;
@@ -41,7 +42,8 @@ public class Refactored extends BaseWindow {
 	ObjectTree OT;
 	ObjectGrave OG;
 	ObjectGrave OG1;
-	ObjectGrave1 OG2;
+	ObjectGrave OG2;
+	WeaponAxeObj AO;
 
 	int mouseX, mouseY, oldMouseX, oldMouseY;
 
@@ -118,18 +120,23 @@ public class Refactored extends BaseWindow {
 	 */
 	protected void initializeModels() {
 		t = new Terrain();
+		t.initialize();
+		
 		MCO = new ModelCharacterObj(posX,posY,posZ);
+		
 		SB = new StatusBar();
 		OT = new ObjectTree();
-		OG = new ObjectGrave();
-		OG1 = new ObjectGrave();
-		OG2 = new ObjectGrave1();
-		t.initialize();
+		OG = new ObjectGrave(3,posY,10,t);
+		OG1 = new ObjectGrave(-3,posY,10,t);
+		OG2 = new ObjectGrave(0,posY,20,t);
+		AO = new WeaponAxeObj();
+		
+		
 		OT.initializeModel();
 		OG.initializeModel();
 		OG1.initializeModel();
 		OG2.initializeModel();
-
+		AO.initializeModel();
 		MCO.initializeModel();
 		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png", "grave.jpg", "grave1.jpg" });
 	}
@@ -149,19 +156,22 @@ public class Refactored extends BaseWindow {
 		t.setPosition(-(t.MAP_X / 2 - 1), 0, -(t.MAP_Z / 2 - 1));
 		t.setRotation(rotX, rotY, rotZ);
 		t.setScaling(scale, scale, scale);
-		
 		//float [] p = MCO.getPosition();
 		//float [] cam = camera.getPosition();
 		OT.setPosition(0, 5, 5);
 		OT.setScaling(scaleTree, scaleTree, scaleTree);
-		OG.setPosition(3, 7, 10);
 		OG.setScaling(scaleGrave, scaleGrave, scaleGrave);
-		OG1.setPosition(-3, 7, 10);
 		OG1.setScaling(scaleGrave, scaleGrave, scaleGrave);
+		OG2.setScaling(scaleGrave, scaleGrave, scaleGrave);
+		AO.setPosition(0, 4, 1);
+		AO.setScaling(scaleAxe, scaleAxe, scaleAxe);
+		AO.setRotation(0, -90, 0);
+		SB.setPosition(2, 5, 4);
 		//MCO.setPosition(-cam[0],-cam[1]-5,-cam[2]-5);
 		//MCO.setRotation(rotX,MCO.getJaw(), rotZ);
 		MCO.setScaling(scaleChar, scaleChar, scaleChar);
 		//MCO.cameraFollowCharacter();
+		SB.render3D();
 		GL11.glMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT_AND_DIFFUSE,
 				allocFloats(new float[] { 1.0f, 1.0f, 0.5f, 0.8f }));
 
@@ -171,8 +181,9 @@ public class Refactored extends BaseWindow {
 		//OT.render3D();
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(1));
 		OG.render3D();
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(2));
 		OG1.render3D();
+		OG2.render3D();
+		AO.render3D();
 	}
 
 	/**
@@ -254,12 +265,9 @@ public class Refactored extends BaseWindow {
 		float[] objPos = MCO.getPosition();
 		float[][] triangle = t
 				.getTrinagleLocation(objPos[0], objPos[2]);
-		MCO.calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);
+		MCO.calcY(triangle[0], triangle[1], triangle[2]);
         MCO.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
     	camera.CamOnObjPossition(MCO.getPosition(), MCO.getJaw());
-    	
-    	//triangle = t.getTrinagleLocation(OG.m_nX, OG.m_nZ);
-    	//OG.calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);
 		//camera.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
 		/*float[] charPos = MCO.getPosition();
 		float[][] triangle = t

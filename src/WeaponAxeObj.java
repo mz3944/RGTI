@@ -6,25 +6,16 @@ import javax.vecmath.Point4f;
 import org.lwjgl.opengl.GL11;
 
 
-public class ObjectGrave extends Model3D {
+public class WeaponAxeObj extends Model3D{
 	List <Point4f> vertex = new LinkedList<Point4f>();
 	List <Point4f> normals = new LinkedList<Point4f>();
 	List <Point4f> textures = new LinkedList<Point4f>();
 	List <Polygon> polygons = new LinkedList<Polygon>();
 	
-	float [] position = new float [3];
 	
-	public ObjectGrave(float x, float y, float z, Terrain t){
-		float [][] triangle = t.getTrinagleLocation(x, z);
-		float max12 = Math.max(triangle[0][1], triangle[1][1]);
-		float maxY  = Math.max(triangle[2][1], max12);
-	    position[1] = maxY + 0.3f;
-		position[0] = x;
-		position[2] = z;
-	}
 	void initializeModel(){
 		ReadObj obj = new ReadObj();
-		obj.getModelObj("Tombstone_RIP_obj.obj");
+		obj.getModelObj("axe.obj");
 		vertex = obj.vertex;
 		normals = obj.normals;
 		textures = obj.textures;
@@ -39,9 +30,10 @@ public class ObjectGrave extends Model3D {
 		GL11.glPushMatrix();
 
 		// TRANSLATE
-		
+		GL11.glTranslatef(m_nX, m_nY, m_nZ);
+
 		// ROTATE and SCALE
-		GL11.glTranslatef(position[0],position[1], position[2]);
+		GL11.glTranslatef(m_nX, m_nY, m_nZ);
 		if (m_rZ != 0)
 			GL11.glRotatef(m_rZ, 0, 0, 1);
 		if (m_rY != 0)
@@ -49,7 +41,7 @@ public class ObjectGrave extends Model3D {
 		if (m_rX != 0)
 			GL11.glRotatef(m_rX, 1, 0, 0);
 			GL11.glScalef(m_sX, m_sY, m_sZ);
-		GL11.glTranslatef(0, 0, 0);
+		GL11.glTranslatef(-m_nX, -m_nY, -m_nZ);
 
 		renderModel();
 

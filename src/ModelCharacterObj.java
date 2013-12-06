@@ -120,7 +120,7 @@ public class ModelCharacterObj extends Model3D {
 			position[2] = -(z/2 - distanceView);
 	}
 	
-	public void calcY(float[] p1, float[] p2, float[] p3, int MAP_X, int MAP_Z) {
+	public void calcY(float[] p1, float[] p2, float[] p3) {
 		float max12 = Math.max(p1[1], p2[1]);
 		float maxY  = Math.max(p3[1], max12);
 	    position[1] = maxY + 0.3f;
