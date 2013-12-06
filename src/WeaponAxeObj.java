@@ -36,10 +36,10 @@ public class WeaponAxeObj extends Model3D{
 		GL11.glTranslatef(m_nX, m_nY, m_nZ);
 		if (m_rZ != 0)
 			GL11.glRotatef(m_rZ, 0, 0, 1);
-		if (m_rY != 0)
-			GL11.glRotatef(m_rY, 0, 1, 0);
 		if (m_rX != 0)
 			GL11.glRotatef(m_rX, 1, 0, 0);
+		if (m_rY != 0)
+			GL11.glRotatef(m_rY, 0, 1, 0);
 			GL11.glScalef(m_sX, m_sY, m_sZ);
 		GL11.glTranslatef(-m_nX, -m_nY, -m_nZ);
 

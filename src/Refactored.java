@@ -44,6 +44,7 @@ public class Refactored extends BaseWindow {
 	ObjectGrave OG1;
 	ObjectGrave OG2;
 	WeaponAxeObj AO;
+	Text text;
 
 	int mouseX, mouseY, oldMouseX, oldMouseY;
 
@@ -130,6 +131,7 @@ public class Refactored extends BaseWindow {
 		OG1 = new ObjectGrave(-3,posY,10,t);
 		OG2 = new ObjectGrave(0,posY,20,t);
 		AO = new WeaponAxeObj();
+		text = new Text("Health",50);
 		
 		
 		OT.initializeModel();
@@ -138,7 +140,7 @@ public class Refactored extends BaseWindow {
 		OG2.initializeModel();
 		AO.initializeModel();
 		MCO.initializeModel();
-		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png", "grave.jpg", "grave1.jpg" });
+		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png", "grave.jpg", "font.png" });
 	}
 
 	/**
@@ -160,12 +162,18 @@ public class Refactored extends BaseWindow {
 		//float [] cam = camera.getPosition();
 		OT.setPosition(0, 5, 5);
 		OT.setScaling(scaleTree, scaleTree, scaleTree);
+		
 		OG.setScaling(scaleGrave, scaleGrave, scaleGrave);
 		OG1.setScaling(scaleGrave, scaleGrave, scaleGrave);
 		OG2.setScaling(scaleGrave, scaleGrave, scaleGrave);
+		
 		AO.setPosition(0, 4, 1);
 		AO.setScaling(scaleAxe, scaleAxe, scaleAxe);
-		AO.setRotation(0, -90, 0);
+		AO.setRotation(90, -90, 0);
+		text.setPosition(0, 5, 1);
+		text.setScaling(1f, 1f, 1f);
+		text.render3D();
+		//text.setScaling(5, 5, 5);
 		SB.setPosition(2, 5, 4);
 		//MCO.setPosition(-cam[0],-cam[1]-5,-cam[2]-5);
 		//MCO.setRotation(rotX,MCO.getJaw(), rotZ);
