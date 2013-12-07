@@ -29,7 +29,7 @@ public class Refactored extends BaseWindow {
 	float rotateSpeed = 50.0f; // move mili degree per second
 
 	
-	float scaleChar = 0.025f;
+	float scaleChar = 1;//0.025f;
 	float scaleTree = 1f;
 	float scaleGrave = 0.3f;
 	float scaleAxe = 0.02f;
@@ -37,6 +37,7 @@ public class Refactored extends BaseWindow {
 
 	Terrain t;
 	ModelCharacterObj MCO;
+	ModelCharacterObj MCO2;
 	IntBuffer m_Textures;
 	StatusBar SB;
 	ObjectTree OT;
@@ -124,6 +125,7 @@ public class Refactored extends BaseWindow {
 		t.initialize();
 		
 		MCO = new ModelCharacterObj(posX,posY,posZ);
+		MCO2 = new ModelCharacterObj(posX+10,posY,posZ-10);
 		
 		SB = new StatusBar();
 		OT = new ObjectTree();
@@ -140,7 +142,8 @@ public class Refactored extends BaseWindow {
 		OG2.initializeModel();
 		AO.initializeModel();
 		MCO.initializeModel();
-		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png", "grave.jpg", "font.png" });
+		MCO2.initializeModel();
+		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png", "grave.jpg", "font.png", "ColorMap_128.png" });
 	}
 
 	/**
@@ -178,6 +181,7 @@ public class Refactored extends BaseWindow {
 		//MCO.setPosition(-cam[0],-cam[1]-5,-cam[2]-5);
 		//MCO.setRotation(rotX,MCO.getJaw(), rotZ);
 		MCO.setScaling(scaleChar, scaleChar, scaleChar);
+		MCO2.setScaling(scaleChar, scaleChar, scaleChar);
 		//MCO.cameraFollowCharacter();
 		SB.render3D();
 		GL11.glMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT_AND_DIFFUSE,
@@ -185,13 +189,15 @@ public class Refactored extends BaseWindow {
 
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(0));
 		t.render3D();
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(3));
 		MCO.render3D();
+		MCO2.render3D();
 		//OT.render3D();
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(1));
-		OG.render3D();
-		OG1.render3D();
-		OG2.render3D();
-		AO.render3D();
+//		OG.render3D();
+//		OG1.render3D();
+//		OG2.render3D();
+//		AO.render3D();
 	}
 
 	/**
