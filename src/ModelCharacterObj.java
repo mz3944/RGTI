@@ -88,6 +88,10 @@ public class ModelCharacterObj extends Model3D {
 	public float getJaw() {
 		return yaw;
 	}
+	
+	public void setJaw(float yaw) {
+		this.yaw = yaw;
+	}
 
 	// increment the camera's current yaw rotation
 	public void pitch(float amount) {
@@ -103,8 +107,15 @@ public class ModelCharacterObj extends Model3D {
 		return pitch;
 	}
 	
+	public boolean getIsPlayer() {
+		return isPlayer;
+	}
 	public void setIsPlayer(boolean isPlayer) {
 		this.isPlayer = isPlayer;
+	}
+	
+	public void setIsMoving(boolean isMoving) {
+		this.isMoving = isMoving;
 	}
 	
 	public void setMovingDirection(boolean[] movingDirection) {
@@ -163,16 +174,27 @@ public class ModelCharacterObj extends Model3D {
 		GL11.glTranslatef(-camX, -camY, -camZ);
 	}
 	
-	public void checkBounds(float x, float z, int distanceView) {
-		distanceView++;
-		if(position[0] > (x/2 - distanceView) - 1)
+	public boolean checkBounds(float x, float z, int distanceView) {
+//		distanceView++;
+		boolean overBounds = false;
+		if(position[0] > (x/2 - distanceView) - 1) {
 			position[0] = (x/2 - distanceView) - 1; 
-		if(position[0] < -(x/2 - distanceView))
+			overBounds = true;
+		}
+		if(position[0] < -(x/2 - distanceView)) {
 			position[0] = -(x/2 - distanceView);
-		if(position[2] > (z/2 - distanceView) - 1)
+			overBounds = true;
+		}
+		if(position[2] > (z/2 - distanceView) - 1) {
 			position[2] = (z/2 - distanceView) - 1;
-		if(position[2] < -(z/2 - distanceView))
+			overBounds = true;
+		}
+		if(position[2] < -(z/2 - distanceView)) {
 			position[2] = -(z/2 - distanceView);
+			overBounds = true;
+		}
+		
+		return overBounds;
 	}
 	
 	public void calcY(float[] p1, float[] p2, float[] p3) {
@@ -181,6 +203,7 @@ public class ModelCharacterObj extends Model3D {
 	    position[1] = maxY + 0.3f;
 	}
 	
+	//morm se narest, da ce npr vanga silm, se oba ustavta, ker se un zacne obract skos, ker skos vanga tiscim --> v takm primeru, ce je ze stran obrnn(cene, ga pa le enkrt obrnm), ga ne obracam, ampk nic ne anredim!!!
 	public void checkObjCollision(float x, float y) {
 		if(!isPlayer && !isMoving)
 			return;
@@ -199,7 +222,7 @@ public class ModelCharacterObj extends Model3D {
 			position[0] -= boundDist * (float) Math.sin(Math.toRadians(yaw+movingAngle));
 			position[2] -= boundDist * (float) Math.cos(Math.toRadians(yaw+movingAngle));
 			if(!isPlayer)
-				yaw(180);
+				yaw(180); // tut tuki mogoce random??? sam ne najbrz od 0 do 360, ampk npr 90stopin okol unga objekta k s eje zadel ne, ostalo pa....!!!!!!!!!!
 		}
 	}
 	

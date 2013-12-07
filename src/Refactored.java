@@ -50,7 +50,8 @@ public class Refactored extends BaseWindow {
 
 	int mouseX, mouseY, oldMouseX, oldMouseY;
 	boolean[] movingDirection = new boolean[4]; // up, right, down, left
-
+	boolean startedMoving = false; //zato ker cene, se preden vidmo prikaz, se gameloop ful hitr odvija, in se predn se logika za igro izvaja tko k treba, gre obj ze cez mejo, zato ko se zacenmo premikat, zacne to delovat!!! (pomojm je to ofra... --> to bi lohk izkoristu da se po nekem casu alpa k npr vrata prestops, se pojavjo sovrazniki in se zacnejo gibat!)
+//nared ce se kakorkol premaksn z misko ali tipkovnico!!!
 	/**
 	 * Initial setup of projection of the scene onto screen, lights etc.
 	 */
@@ -128,7 +129,9 @@ public class Refactored extends BaseWindow {
 		
 		MCO = new ModelCharacterObj(posX,posY,posZ);
 		MCO.setIsPlayer(true);
+		
 		MCO2 = new ModelCharacterObj(posX+10,posY,posZ-10);
+		MCO2.setJaw(getRandomAngle());
 		
 		SB = new StatusBar();
 		OT = new ObjectTree();
@@ -266,6 +269,7 @@ public class Refactored extends BaseWindow {
 		{
 			MCO.walkForward(movementSpeed * dt);
 			movingDirection[0] = true;
+			startedMoving = true;
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_K))// move backwards
 		{
@@ -282,7 +286,12 @@ public class Refactored extends BaseWindow {
 			MCO.strafeLeft(movementSpeed * dt);
 			movingDirection[1] = true;
 		}
-
+		
+		if(startedMoving)
+			MCO2.walkForward(movementSpeed * dt/2);
+		
+		
+		
 		
 		float[] objPos = MCO.getPosition();
 		float[][] triangle = t
@@ -304,10 +313,14 @@ public class Refactored extends BaseWindow {
 		triangle = t
 				.getTrinagleLocation(objPos2[0], objPos2[2]);
 		MCO2.calcY(triangle[0], triangle[1], triangle[2]);
-		MCO2.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
+		boolean overBounds = MCO2.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
+		if(overBounds)
+			MCO2.setJaw(getRandomAngle()); //treba pazt, ker npr c ga u kotu al pa blizu kota nrdis, pa se hitr zabje, lohk na zlo mejhnm obmocju potuje (lahko resmo, da jih ne damo blizu robov, al pa da ne damo 180, ampak random, in ponovno klicemo checkbouds, dokler ni kot kul, torej da se izogne koliziji z bound!!! (z do-while!!!))
 		
 		MCO.setMovingDirection(movingDirection);
 		MCO.checkObjCollision(objPos2[0], objPos2[2]);
+		
+		MCO2.setIsMoving(true);
         MCO2.checkObjCollision(objPos[0], objPos[2]);
         
     	
@@ -327,6 +340,13 @@ public class Refactored extends BaseWindow {
 			//GLU.gluLookAt(objPos[0], objPos[1], objPos[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);		
 		camera.lookThrough();
 		super.processInput();
+	}
+	
+	//pomozne metode
+	private float getRandomAngle() {
+		int min = -180, max = 180;
+		float enemyAngle = min + (float)(Math.random() * ((max - min) + 1));
+		return enemyAngle;
 	}
 
 	public static void main(String[] args) {
