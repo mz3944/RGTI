@@ -1,4 +1,5 @@
 import java.nio.IntBuffer;
+import java.util.Arrays;
 
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
@@ -48,6 +49,7 @@ public class Refactored extends BaseWindow {
 	Text text;
 
 	int mouseX, mouseY, oldMouseX, oldMouseY;
+	boolean[] movingDirection = new boolean[4]; // up, right, down, left
 
 	/**
 	 * Initial setup of projection of the scene onto screen, lights etc.
@@ -125,6 +127,7 @@ public class Refactored extends BaseWindow {
 		t.initialize();
 		
 		MCO = new ModelCharacterObj(posX,posY,posZ);
+		MCO.setIsPlayer(true);
 		MCO2 = new ModelCharacterObj(posX+10,posY,posZ-10);
 		
 		SB = new StatusBar();
@@ -258,21 +261,26 @@ public class Refactored extends BaseWindow {
 			//MCO.yaw(rotateSpeed * -dt);
 		}
         // OBJECT move
-		if (Keyboard.isKeyDown(Keyboard.KEY_K))// move forward
-		{
-			MCO.walkBackwards(movementSpeed * dt);
-		}
-		if (Keyboard.isKeyDown(Keyboard.KEY_I))// move backwards
+		Arrays.fill(movingDirection, false);
+		if (Keyboard.isKeyDown(Keyboard.KEY_I))// move forward
 		{
 			MCO.walkForward(movementSpeed * dt);
+			movingDirection[0] = true;
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_K))// move backwards
+		{
+			MCO.walkBackwards(movementSpeed * dt);
+			movingDirection[2] = true;
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_L))// strafe left
 		{
 			MCO.strafeRight(movementSpeed * dt);
+			movingDirection[3] = true;
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_J))// strafe right
 		{
 			MCO.strafeLeft(movementSpeed * dt);
+			movingDirection[1] = true;
 		}
 
 		
@@ -291,6 +299,17 @@ public class Refactored extends BaseWindow {
 		
 		/*t.setVisibleArea((int) -charPos[0], (int) -charPos[2],
 				distanceView, angleView, MCO.getJaw(), backDistanceView);*/
+    	
+    	float[]objPos2 = MCO2.getPosition();
+		triangle = t
+				.getTrinagleLocation(objPos2[0], objPos2[2]);
+		MCO2.calcY(triangle[0], triangle[1], triangle[2]);
+		MCO2.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
+		
+		MCO.setMovingDirection(movingDirection);
+		MCO.checkObjCollision(objPos2[0], objPos2[2]);
+        MCO2.checkObjCollision(objPos[0], objPos[2]);
+        
     	
 		float[] cameraPos = camera.getPosition();
 		triangle = t.getTrinagleLocation(-cameraPos[0], -cameraPos[2]);

@@ -26,6 +26,10 @@ public class ModelCharacterObj extends Model3D {
 	// the rotation around the X axis of the camera
 	private float pitch = 0.0f;
 	
+	private boolean isPlayer = false;
+	private boolean isMoving = false; //positionChanged
+	float movingAngle;
+	
 	//arrays for drawing character
 	float[] vertices;
 	float[] normals;
@@ -98,7 +102,29 @@ public class ModelCharacterObj extends Model3D {
 	public float getPitch(){
 		return pitch;
 	}
-
+	
+	public void setIsPlayer(boolean isPlayer) {
+		this.isPlayer = isPlayer;
+	}
+	
+	public void setMovingDirection(boolean[] movingDirection) {
+		if(movingDirection[0] && movingDirection[1])
+			movingAngle = 45;
+		else if(movingDirection[1] && movingDirection[2])
+			movingAngle = 135;
+		else if(movingDirection[2] && movingDirection[3])
+			movingAngle = -135;
+		else if(movingDirection[3] && movingDirection[0])
+			movingAngle = -45;
+		else if(movingDirection[0])
+			movingAngle = 0;
+		else if(movingDirection[1])
+			movingAngle = 90;
+		else if(movingDirection[2])
+			movingAngle = 180;
+		else if(movingDirection[3])
+			movingAngle = -90;
+	}
 	// moves the camera forward relative to its current rotation (yaw)
 	public void walkForward(float distance) {
 		position[0] += distance * (float) Math.sin(Math.toRadians(yaw));
@@ -153,6 +179,28 @@ public class ModelCharacterObj extends Model3D {
 		float max12 = Math.max(p1[1], p2[1]);
 		float maxY  = Math.max(p3[1], max12);
 	    position[1] = maxY + 0.3f;
+	}
+	
+	public void checkObjCollision(float x, float y) {
+		if(!isPlayer && !isMoving)
+			return;
+		
+		float dx = position[0]-x;
+		float dy = position[2]-y;
+		float d = (float)Math.sqrt(Math.pow(dx,2)+ Math.pow(dy,2));
+		System.out.println("asfsa  " + dx + " " + dy + " " + d);
+		System.out.println(yaw);
+		if(d < 1.7f) {
+			float boundDist = 1.7f-d;
+//			if(isPlayer) //to za use sicer, moram spremenit, torj dt ta if stauk stra, pa v refractor narest za usak object movingPosition!!!
+//				yaw(movingAngle);
+//			if(movingDirection[2])
+//				boundDist = -boundDist; //poskrblenoce gremo u rikvrc(kaj pa u stran???) ---> mogu bi narest glede na kot !!!!!!!!
+			position[0] -= boundDist * (float) Math.sin(Math.toRadians(yaw+movingAngle));
+			position[2] -= boundDist * (float) Math.cos(Math.toRadians(yaw+movingAngle));
+			if(!isPlayer)
+				yaw(180);
+		}
 	}
 	
 	// translates and rotate the matrix so that it looks through the camera
