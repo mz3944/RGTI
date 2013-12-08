@@ -29,11 +29,15 @@ public class ModelCharacterObj extends Model3D {
 	private boolean isPlayer = false;
 	private boolean isMoving = false; //positionChanged
 	float movingAngle;
+	float health = 100;
+	float wait = 0;
 	
 	//arrays for drawing character
 	float[] vertices;
 	float[] normals;
 	float[] textures;
+	float[] centerOffset;
+	float collisionDeltaTime = 0; //for enemies only
 	
 	  private static int BYTE_SIZE = 4;
 	  private static int VERTEX_DIMENSION = 3;
@@ -49,6 +53,7 @@ public class ModelCharacterObj extends Model3D {
 		vertices = obj.verticesRearranged;
 		normals = obj.normalsRearranged;
 		textures = obj.texturesRearranged;
+		centerOffset = obj.centerOffset;
 	    
 	//  Generating buffers
 	    verticesAndNormalsAndTextureBufferID = glGenBuffersARB();
@@ -82,7 +87,6 @@ public class ModelCharacterObj extends Model3D {
 	public void yaw(float amount) {
 		// increment the yaw by the amount param
 		yaw += amount;
-	//	System.out.println("Obj yaw:" + Float.toString(yaw));
 	}
 	
 	public float getJaw() {
@@ -90,7 +94,8 @@ public class ModelCharacterObj extends Model3D {
 	}
 	
 	public void setJaw(float yaw) {
-		this.yaw = yaw;
+		if(wait == 0 && collisionDeltaTime == 0)
+			this.yaw = yaw;
 	}
 
 	// increment the camera's current yaw rotation
@@ -118,6 +123,29 @@ public class ModelCharacterObj extends Model3D {
 		this.isMoving = isMoving;
 	}
 	
+	public boolean damage(int amount) {
+		health -= 0.01*amount;
+		if(health < 0) 
+			health = 0;
+		
+		if(isPlayer) {
+			if(health == 0) {
+				System.out.println("You died!");
+				return true;
+			}
+			else
+				System.out.println("Health: " + health);
+		}
+		
+		return false;
+	}
+	
+	public void updateWait(float dt) {
+		collisionDeltaTime -= dt;
+		if(collisionDeltaTime < 0)
+			collisionDeltaTime = 0;
+	}
+	
 	public void setMovingDirection(boolean[] movingDirection) {
 		if(movingDirection[0] && movingDirection[1])
 			movingAngle = 45;
@@ -140,30 +168,25 @@ public class ModelCharacterObj extends Model3D {
 	public void walkForward(float distance) {
 		position[0] += distance * (float) Math.sin(Math.toRadians(yaw));
 		position[2] += distance * (float) Math.cos(Math.toRadians(yaw));
-//		System.out.println("Forw obj X:" + Float.toString(position[0]) + ", Z:" + Float.toString(position[2]));
 	}
 
 	// moves the camera backward relative to its current rotation (yaw)
 	public void walkBackwards(float distance) {
 		position[0] += distance * (float) Math.sin(Math.toRadians(yaw + 180));
 		position[2] += distance * (float) Math.cos(Math.toRadians(yaw + 180));
-	//	System.out.println("Back obj X:" + Float.toString(position[0]) + ", Z:" + Float.toString(position[2]));
 	}
 
 	// strafes the camera left relitive to its current rotation (yaw)
 	public void strafeLeft(float distance) {
 		position[0] += distance * (float) Math.sin(Math.toRadians(yaw + 90));
 		position[2] += distance * (float) Math.cos(Math.toRadians(yaw + 90));
-//		System.out.println("Left obj X:" + Float.toString(position[0]) + ", Z:" + Float.toString(position[2]));
 	}
 
 	// strafes the camera right relitive to its current rotation (yaw)
 	public void strafeRight(float distance) {
 		position[0] += distance * (float) Math.sin(Math.toRadians(yaw - 90));
 		position[2] += distance * (float) Math.cos(Math.toRadians(yaw - 90));
-//		System.out.println("Righ obj X:" + Float.toString(position[0]) + ", Z:" + Float.toString(position[2]));
 	}
-	
 	
 	public void cameraFollowCharacter(){
 		float camX, camY, camZ;
@@ -175,7 +198,6 @@ public class ModelCharacterObj extends Model3D {
 	}
 	
 	public boolean checkBounds(float x, float z, int distanceView) {
-//		distanceView++;
 		boolean overBounds = false;
 		if(position[0] > (x/2 - distanceView) - 1) {
 			position[0] = (x/2 - distanceView) - 1; 
@@ -197,33 +219,41 @@ public class ModelCharacterObj extends Model3D {
 		return overBounds;
 	}
 	
-	public void calcY(float[] p1, float[] p2, float[] p3) {
-		float max12 = Math.max(p1[1], p2[1]);
-		float maxY  = Math.max(p3[1], max12);
-	    position[1] = maxY + 0.3f;
+	public void calcY(float[] p1, float[] p2, float[] p3, int MAP_X, int MAP_Z) {	
+		float det = (p2[2] - p3[2]) * (p1[0] - p3[0]) + (p3[0] - p2[0]) * (p1[2] - p3[2]);
+		
+		float l1 = ((p2[2] - p3[2]) * (position[0] - p3[0]) + (p3[0] - p2[0]) * (position[2] - p3[2])) / det;
+		float l2 = ((p3[2] - p1[2]) * (position[0] - p3[0]) + (p1[0] - p3[0]) * (position[2] - p3[2])) / det;
+		float l3 = 1.0f - l1 - l2;
+		
+		position[1] = (l1 * p1[1] + l2 * p2[1] + l3 * p3[1]) + 0.3f;
 	}
 	
-	//morm se narest, da ce npr vanga silm, se oba ustavta, ker se un zacne obract skos, ker skos vanga tiscim --> v takm primeru, ce je ze stran obrnn(cene, ga pa le enkrt obrnm), ga ne obracam, ampk nic ne anredim!!!
-	public void checkObjCollision(float x, float y) {
-		if(!isPlayer && !isMoving)
-			return;
-		
+	public float getDistance(float x, float y) {
 		float dx = position[0]-x;
 		float dy = position[2]-y;
 		float d = (float)Math.sqrt(Math.pow(dx,2)+ Math.pow(dy,2));
-		System.out.println("asfsa  " + dx + " " + dy + " " + d);
-		System.out.println(yaw);
+		
+		return d;
+	}
+	
+	public boolean checkObjCollision(float x, float y, float yaw, boolean isPlayer) {
+		if(!this.isPlayer && !isMoving)
+			return false;
+
+		float d = getDistance(x, y);
 		if(d < 1.7f) {
+			if(!this.isPlayer && collisionDeltaTime == 0)
+				collisionDeltaTime = 1.0f;
 			float boundDist = 1.7f-d;
-//			if(isPlayer) //to za use sicer, moram spremenit, torj dt ta if stauk stra, pa v refractor narest za usak object movingPosition!!!
-//				yaw(movingAngle);
-//			if(movingDirection[2])
-//				boundDist = -boundDist; //poskrblenoce gremo u rikvrc(kaj pa u stran???) ---> mogu bi narest glede na kot !!!!!!!!
-			position[0] -= boundDist * (float) Math.sin(Math.toRadians(yaw+movingAngle));
-			position[2] -= boundDist * (float) Math.cos(Math.toRadians(yaw+movingAngle));
-			if(!isPlayer)
-				yaw(180); // tut tuki mogoce random??? sam ne najbrz od 0 do 360, ampk npr 90stopin okol unga objekta k s eje zadel ne, ostalo pa....!!!!!!!!!!
+			position[0] -= boundDist * (float) Math.sin(Math.toRadians(this.yaw+movingAngle));
+			position[2] -= boundDist * (float) Math.cos(Math.toRadians(this.yaw+movingAngle));
+
+			if(!isPlayer && !this.isPlayer) 
+				yaw(Refactored.getRandomNumber(-180,180));
+			return true;
 		}
+		return false;
 	}
 	
 	// translates and rotate the matrix so that it looks through the camera
@@ -234,7 +264,6 @@ public class ModelCharacterObj extends Model3D {
 		// roatate the yaw around the Y axis
 		GL11.glRotatef(yaw, 0.0f, 1.0f, 0.0f);
 		// translate to the position vector's location
-	//	GL11.glTranslatef(position[0], position[1], position[2]);
 	}
 
 	@Override

@@ -11,7 +11,9 @@ public class FPCameraController {
 	private float yaw = 180.0f;
 	// the rotation around the X axis of the camera
 	private float pitch = 0.0f;
-	private float dist2obj = 10.0f;
+	private float dist2obj = 15.0f;
+	
+	private float lookAbove = 10.0f;
 
 	// Constructor that takes the starting x, y, z location of the camera
 	public FPCameraController(float x, float y, float z) {
@@ -29,9 +31,11 @@ public class FPCameraController {
 		position[0] = -objposition[0] + dist2obj * (float) Math.sin(Math.toRadians(yaw));
 		position[2] = -objposition[2] - dist2obj * (float) Math.cos(Math.toRadians(yaw));
 	//	System.out.println("Folow cam X:" + Float.toString(position[0]) + ", Z:" + Float.toString(position[2]));
-        float dy = -(-position[1] - objposition[1] - 3.0f);
-        float atan = (float) Math.atan(dy/dist2obj);
-        pitch = (float) -Math.toDegrees(atan); 
+//        float dy = -(-position[1] - objposition[1] - 3.0f);
+//        float atan = (float) Math.atan(dy/dist2obj);
+//        pitch = (float) -Math.toDegrees(atan); 
+        
+        position[1] = -(objposition[1] + lookAbove);//System.out.println("kkkkkkkkkkkkkkkkkk  " + objposition[1]);
     	/*System.out.println("objY" + Float.toString(objposition[1]) + "camY" + Float.toString(position[1]) 
               //  + ", Folow cam pitch:" + Float.toString(ppitch) 
     			                  + ", pitch:" + Float.toString(pitch) 
@@ -57,6 +61,14 @@ public class FPCameraController {
 			pitch = 45;
 		else if(pitch < -45)
 			pitch = -45;
+	}
+	
+	public void setDist2obj(int scr) {
+		dist2obj-=(0.5f*scr);//System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   " + dist2obj);
+		if(dist2obj < 2.5f)
+			dist2obj = 2.5f;
+		else if(dist2obj > 30.0f) //pri 58.5 se mi je sesul
+			dist2obj = 30.0f;
 	}
 
 	// moves the camera forward relative to its current rotation (yaw)

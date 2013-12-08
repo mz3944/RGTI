@@ -10,6 +10,8 @@ public class ReadObj {
 	float[] normalsRearranged;
 	float[] texturesRearranged;
 	
+	float[] centerOffset;
+	
 	public void getModelObj(String objectName){
 		try{
 			List <Float> vertices = new LinkedList<Float>();
@@ -19,6 +21,13 @@ public class ReadObj {
 			List <Integer> vertexIndices = new LinkedList<Integer>();
 			List <Integer> normalIndices = new LinkedList<Integer>();
 			List <Integer> textureIndices = new LinkedList<Integer>();
+			
+			float minX = 0;
+			float maxX = 0;
+			float minY = 0;
+			float maxY = 0;
+			float minZ = 0;
+			float maxZ = 0;
 			
 			String filepath = objectName;
 			FileInputStream fis = new FileInputStream(filepath);
@@ -37,6 +46,20 @@ public class ReadObj {
 							vertices.add(x);
 							vertices.add(y);
 							vertices.add(z);
+							
+							if(x < minX)
+								minX = x;
+							else if(x > maxX)
+								maxX = x;
+							if(y < minY)
+								minY = y;
+							else if(y > maxY)
+								maxY = y;
+							if(z < minZ)
+								minZ = z;
+							else if(z > maxZ)
+								maxZ = z;
+							
 							i += 3;
 						}
 						else if(niz[0].equals("vn")){
@@ -131,6 +154,10 @@ public class ReadObj {
 			dis.close();
 
 			rearrange(vertices, normals, textures, vertexIndices, normalIndices, textureIndices);
+			centerOffset = new float[3];
+			centerOffset[0] = (maxX - minX)/2;
+			centerOffset[1] = (maxY - minY)/2;
+			centerOffset[2] = (maxZ - minZ)/2;
 		}
 		catch(IOException e){
 			System.out.println(e.getStackTrace());
@@ -138,8 +165,8 @@ public class ReadObj {
 	}
 	
 	private void rearrange(List <Float> vertices, List <Float> normals, List <Float> textures, List <Integer> vertexIndices, List <Integer> normalIndices, List <Integer> textureIndices) {
-		verticesRearranged = new float[vertexIndices.size()*3];System.out.println(verticesRearranged.length);
-		normalsRearranged = new float[normalIndices.size()*3];System.out.println(vertexIndices.size());
+		verticesRearranged = new float[vertexIndices.size()*3];
+		normalsRearranged = new float[normalIndices.size()*3];
 		texturesRearranged = new float[textureIndices.size()*2];
 		for(int i = 0; i < vertexIndices.size(); i++) {
 			verticesRearranged[i*3] = vertices.get(vertexIndices.get(i)*3);

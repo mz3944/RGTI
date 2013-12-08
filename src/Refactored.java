@@ -17,7 +17,7 @@ public class Refactored extends BaseWindow {
 	boolean leanL = false, leanR = false;
 	int distanceView = 60;
 	float angleView = 90;
-	int backDistanceView = -4;
+	int backDistanceView = -5;
 
 	float dx = 0.0f;
 	float dy = 0.0f;
@@ -30,15 +30,17 @@ public class Refactored extends BaseWindow {
 	float rotateSpeed = 50.0f; // move mili degree per second
 
 	
-	float scaleChar = 1;//0.025f;
+	float scaleChar = 1;
 	float scaleTree = 1f;
 	float scaleGrave = 0.3f;
 	float scaleAxe = 0.02f;
 	FPCameraController camera;
+	int enemyNumber = 20;
 
 	Terrain t;
 	ModelCharacterObj MCO;
-	ModelCharacterObj MCO2;
+	ModelCharacterObj[] enemies;
+	
 	IntBuffer m_Textures;
 	StatusBar SB;
 	ObjectTree OT;
@@ -50,8 +52,9 @@ public class Refactored extends BaseWindow {
 
 	int mouseX, mouseY, oldMouseX, oldMouseY;
 	boolean[] movingDirection = new boolean[4]; // up, right, down, left
-	boolean startedMoving = false; //zato ker cene, se preden vidmo prikaz, se gameloop ful hitr odvija, in se predn se logika za igro izvaja tko k treba, gre obj ze cez mejo, zato ko se zacenmo premikat, zacne to delovat!!! (pomojm je to ofra... --> to bi lohk izkoristu da se po nekem casu alpa k npr vrata prestops, se pojavjo sovrazniki in se zacnejo gibat!)
-//nared ce se kakorkol premaksn z misko ali tipkovnico!!!
+	boolean startedMoving = false; 
+	float followPlayerRange = 100.0f;
+
 	/**
 	 * Initial setup of projection of the scene onto screen, lights etc.
 	 */
@@ -130,8 +133,17 @@ public class Refactored extends BaseWindow {
 		MCO = new ModelCharacterObj(posX,posY,posZ);
 		MCO.setIsPlayer(true);
 		
-		MCO2 = new ModelCharacterObj(posX+10,posY,posZ-10);
-		MCO2.setJaw(getRandomAngle());
+		enemies = new ModelCharacterObj[enemyNumber];
+		float xMap = t.MAP_X * t.MAP_SCALE;
+		float zMap = t.MAP_Z * t.MAP_SCALE;
+		float xMin = -(xMap/2 - distanceView);
+		float xMax = (xMap/2 - distanceView) - 1;
+		float zMin = -(zMap/2 - distanceView);
+		float zMax = (zMap/2 - distanceView) - 1;
+		for(int i = 0; i < enemyNumber; i++) {
+			enemies[i] = new ModelCharacterObj(getRandomNumber(xMin,xMax), 0, getRandomNumber(zMin,zMax)); //y 0, ker itk checkBounds poskrbi za y
+			enemies[i].setJaw(getRandomNumber(-180, 180));
+		}
 		
 		SB = new StatusBar();
 		OT = new ObjectTree();
@@ -148,7 +160,9 @@ public class Refactored extends BaseWindow {
 		OG2.initializeModel();
 		AO.initializeModel();
 		MCO.initializeModel();
-		MCO2.initializeModel();
+		for(int i = 0; i < enemyNumber; i++) {
+			enemies[i].initializeModel();
+		}
 		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png", "grave.jpg", "font.png", "ColorMap_128.png" });
 	}
 
@@ -187,7 +201,9 @@ public class Refactored extends BaseWindow {
 		//MCO.setPosition(-cam[0],-cam[1]-5,-cam[2]-5);
 		//MCO.setRotation(rotX,MCO.getJaw(), rotZ);
 		MCO.setScaling(scaleChar, scaleChar, scaleChar);
-		MCO2.setScaling(scaleChar, scaleChar, scaleChar);
+		for(int i = 0; i < enemyNumber; i++) {
+			enemies[i].setScaling(scaleChar, scaleChar, scaleChar);
+		}
 		//MCO.cameraFollowCharacter();
 		SB.render3D();
 		GL11.glMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT_AND_DIFFUSE,
@@ -195,11 +211,14 @@ public class Refactored extends BaseWindow {
 
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(0));
 		t.render3D();
+		
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(3));
 		MCO.render3D();
-		MCO2.render3D();
+		for(int i = 0; i < enemyNumber; i++) {
+			enemies[i].render3D();
+		}
 		//OT.render3D();
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(1));
+//		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(1));
 //		OG.render3D();
 //		OG1.render3D();
 //		OG2.render3D();
@@ -219,6 +238,16 @@ public class Refactored extends BaseWindow {
 		dx = Mouse.getDX();
 		// distance in mouse movement from the last getDY() call.
 		dy = Mouse.getDY();
+		
+	    int dWheel = Mouse.getDWheel();
+	    int scr = 0;
+	    if (dWheel < 0) {
+	    	scr = -1;
+	    } else if (dWheel > 0){
+	        scr = 1;
+	   }
+	    camera.setDist2obj(scr);
+	    
 
 		// controll camera yaw from x movement fromt the mouse
 		// object rotate
@@ -230,10 +259,8 @@ public class Refactored extends BaseWindow {
 		{
 			camera.yaw(movementSpeed * dt);
 		}
-		//camera.yaw(dx * mouseSensitivity);
-		//MCO.yaw(dx * mouseSensitivity);
+
 		MCO.yaw(mouseSensitivity * -dx);
-		
 		
 		// controll camera pitch from y movement fromt the mouse
 		camera.pitch(dy * mouseSensitivity);
@@ -287,64 +314,77 @@ public class Refactored extends BaseWindow {
 			movingDirection[1] = true;
 		}
 		
-		if(startedMoving)
-			MCO2.walkForward(movementSpeed * dt/2);
-		
-		
-		
-		
 		float[] objPos = MCO.getPosition();
 		float[][] triangle = t
 				.getTrinagleLocation(objPos[0], objPos[2]);
-		MCO.calcY(triangle[0], triangle[1], triangle[2]);
+		MCO.calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);
         MCO.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
-    	camera.CamOnObjPossition(MCO.getPosition(), MCO.getJaw());
-		//camera.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
-		/*float[] charPos = MCO.getPosition();
-		float[][] triangle = t
-				.getTrinagleLocation(-charPos[0], -charPos[2]);
-		MCO.calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);*/
-		
-		
-		/*t.setVisibleArea((int) -charPos[0], (int) -charPos[2],
-				distanceView, angleView, MCO.getJaw(), backDistanceView);*/
-    	
-    	float[]objPos2 = MCO2.getPosition();
-		triangle = t
-				.getTrinagleLocation(objPos2[0], objPos2[2]);
-		MCO2.calcY(triangle[0], triangle[1], triangle[2]);
-		boolean overBounds = MCO2.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
-		if(overBounds)
-			MCO2.setJaw(getRandomAngle()); //treba pazt, ker npr c ga u kotu al pa blizu kota nrdis, pa se hitr zabje, lohk na zlo mejhnm obmocju potuje (lahko resmo, da jih ne damo blizu robov, al pa da ne damo 180, ampak random, in ponovno klicemo checkbouds, dokler ni kot kul, torej da se izogne koliziji z bound!!! (z do-while!!!))
-		
+    	camera.CamOnObjPossition(MCO.getPosition(), MCO.getJaw());		
 		MCO.setMovingDirection(movingDirection);
-		MCO.checkObjCollision(objPos2[0], objPos2[2]);
-		
-		MCO2.setIsMoving(true);
-        MCO2.checkObjCollision(objPos[0], objPos[2]);
+
+        int playerHit = 0;
+		for(int i = 0; i < enemyNumber; i++) {
+	    	float[]objPos3 = enemies[i].getPosition();
+			triangle = t
+					.getTrinagleLocation(objPos3[0], objPos3[2]);
+			enemies[i].calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);
+			boolean overBounds = enemies[i].checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
+			if(overBounds)
+				enemies[i].setJaw(getRandomNumber(-180,180));	
+			enemies[i].setIsMoving(true);
+			enemies[i].updateWait(dt);
+			
+			//klolizija med sovrazniki
+			for(int j = 0; j < enemyNumber; j++) {
+				if(j != i) {
+					float[]tempObjPos = enemies[j].getPosition();
+					enemies[i].checkObjCollision(tempObjPos[0], tempObjPos[2], enemies[j].getJaw(), false);
+				}
+			}
+
+			//kolizija nasprotnika z igralcem
+			float playerDistance = enemies[i].getDistance(objPos[0], objPos[2]);
+			boolean playerContact = false;
+			if(playerDistance <= followPlayerRange) {
+				float[] directionVec = new float[2];
+				directionVec[0] = (objPos[0])-(objPos3[0]);
+				directionVec[1] = (objPos[2])-(objPos3[2]);
+				
+				float length = (float) Math.sqrt(directionVec[0] * directionVec[0] + directionVec[1] * directionVec[1]);
+				if (length != 0) {
+					directionVec[0] = directionVec[0] / length;
+					directionVec[1] = directionVec[1] / length;
+				}
+				
+				float newAngle = (float)Math.atan2(directionVec[1], directionVec[0]);
+				
+				newAngle = (float) Math.toDegrees(45-(newAngle-45));
+				enemies[i].setJaw(newAngle);
+
+				playerContact = enemies[i].checkObjCollision(objPos[0], objPos[2], MCO.getJaw(), true);
+			}
+			if(!playerContact && startedMoving)
+				enemies[i].walkForward(movementSpeed * dt/2);
+			if(playerContact)
+				playerHit++;
+			MCO.checkObjCollision(objPos3[0], objPos3[2], enemies[i].getJaw(), false);
+		}
         
-    	
+		if(MCO.damage(playerHit))
+			BaseWindow.isRunning = false;
+        
 		float[] cameraPos = camera.getPosition();
-		triangle = t.getTrinagleLocation(-cameraPos[0], -cameraPos[2]);
-		camera.calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);
-		
         t.setVisibleArea((int) -cameraPos[0], (int) -cameraPos[2],
 				distanceView, angleView, camera.getJaw(), backDistanceView);
+	
+	// set the modelview matrix back to the identity
+	GL11.glLoadIdentity();
 		
-		// set the modelview matrix back to the identity
-		GL11.glLoadIdentity();
-
-		//MCO.lookThrough();
-		// look through the camera before you draw anything
-		//float[] objPos = MCO.getPosition();
-			//GLU.gluLookAt(objPos[0], objPos[1], objPos[2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);		
-		camera.lookThrough();
-		super.processInput();
+	camera.lookThrough();
+	super.processInput();
 	}
 	
-	//pomozne metode
-	private float getRandomAngle() {
-		int min = -180, max = 180;
+	public static float getRandomNumber(float min, float max) {
 		float enemyAngle = min + (float)(Math.random() * ((max - min) + 1));
 		return enemyAngle;
 	}
