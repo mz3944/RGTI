@@ -43,12 +43,12 @@ public class Refactored extends BaseWindow {
 	
 	IntBuffer m_Textures;
 	StatusBar SB;
-	ObjectTree OT;
-	ObjectGrave OG;
-	ObjectGrave OG1;
-	ObjectGrave OG2;
-	WeaponAxeObj AO;
-	Text text;
+	//ObjectTree OT;
+	//ObjectGrave OG;
+	//ObjectGrave OG1;
+	//ObjectGrave OG2;
+	//WeaponAxeObj AO;
+	//Text text;
 
 	int mouseX, mouseY, oldMouseX, oldMouseY;
 	boolean[] movingDirection = new boolean[4]; // up, right, down, left
@@ -163,7 +163,7 @@ public class Refactored extends BaseWindow {
 		for(int i = 0; i < enemyNumber; i++) {
 			enemies[i].initializeModel();
 		}
-		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png", "grave.jpg", "font.png", "ColorMap_128.png" });
+		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png", "ColorMap_128.png" });
 	}
 
 	/**
@@ -211,7 +211,7 @@ public class Refactored extends BaseWindow {
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(0));
 		t.render3D();
 		
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(3));
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(1));
 		MCO.render3D();
 		for(int i = 0; i < enemyNumber; i++) {
 			enemies[i].render3D();
