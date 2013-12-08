@@ -146,19 +146,19 @@ public class Refactored extends BaseWindow {
 		}
 		
 		SB = new StatusBar();
-		OT = new ObjectTree();
-		OG = new ObjectGrave(3,posY,10,t);
-		OG1 = new ObjectGrave(-3,posY,10,t);
-		OG2 = new ObjectGrave(0,posY,20,t);
-		AO = new WeaponAxeObj();
-		text = new Text("Health",50);
+		//OT = new ObjectTree();
+		//OG = new ObjectGrave(3,posY,10,t);
+		//OG1 = new ObjectGrave(-3,posY,10,t);
+		//OG2 = new ObjectGrave(0,posY,20,t);
+	//	AO = new WeaponAxeObj();
+	//	text = new Text("Health",50);
 		
 		
-		OT.initializeModel();
-		OG.initializeModel();
-		OG1.initializeModel();
-		OG2.initializeModel();
-		AO.initializeModel();
+		//OT.initializeModel();
+		//OG.initializeModel();
+		//OG1.initializeModel();
+		//OG2.initializeModel();
+//		AO.initializeModel();
 		MCO.initializeModel();
 		for(int i = 0; i < enemyNumber; i++) {
 			enemies[i].initializeModel();
@@ -183,29 +183,28 @@ public class Refactored extends BaseWindow {
 		t.setScaling(scale, scale, scale);
 		//float [] p = MCO.getPosition();
 		//float [] cam = camera.getPosition();
-		OT.setPosition(0, 5, 5);
+		/*OT.setPosition(0, 5, 5);
 		OT.setScaling(scaleTree, scaleTree, scaleTree);
 		
 		OG.setScaling(scaleGrave, scaleGrave, scaleGrave);
 		OG1.setScaling(scaleGrave, scaleGrave, scaleGrave);
 		OG2.setScaling(scaleGrave, scaleGrave, scaleGrave);
 		
-		AO.setPosition(0, 4, 1);
-		AO.setScaling(scaleAxe, scaleAxe, scaleAxe);
-		AO.setRotation(90, -90, 0);
+		
 		text.setPosition(0, 5, 1);
 		text.setScaling(1f, 1f, 1f);
 		text.render3D();
 		//text.setScaling(5, 5, 5);
-		SB.setPosition(2, 5, 4);
-		//MCO.setPosition(-cam[0],-cam[1]-5,-cam[2]-5);
-		//MCO.setRotation(rotX,MCO.getJaw(), rotZ);
+		SB.setPosition(2, 5, 4);*/
+		//AO.setPosition(0, 4, 1);
+		//AO.setScaling(scaleAxe, scaleAxe, scaleAxe);
+		//AO.setRotation(90, -90, 0);
 		MCO.setScaling(scaleChar, scaleChar, scaleChar);
 		for(int i = 0; i < enemyNumber; i++) {
 			enemies[i].setScaling(scaleChar, scaleChar, scaleChar);
 		}
-		//MCO.cameraFollowCharacter();
 		SB.render3D();
+		//text.render3D();
 		GL11.glMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT_AND_DIFFUSE,
 				allocFloats(new float[] { 1.0f, 1.0f, 0.5f, 0.8f }));
 
@@ -228,6 +227,9 @@ public class Refactored extends BaseWindow {
 	/**
 	 * Processes Keyboard and Mouse input and spawns actions
 	 */
+	
+	int dmg = 0;
+	
 	protected void processInput() {
 
 		time = Sys.getTime();
@@ -365,14 +367,23 @@ public class Refactored extends BaseWindow {
 			}
 			if(!playerContact && startedMoving)
 				enemies[i].walkForward(movementSpeed * dt/2);
-			if(playerContact)
+			if(playerContact){
 				playerHit++;
+				 dmg++;
+				System.out.println((int)(dmg));
+				if (((int)(dmg))%500 == 0){
+					System.out.println("bar -1");
+					SB.bars -= 1;
+				}
+			}
 			MCO.checkObjCollision(objPos3[0], objPos3[2], enemies[i].getJaw(), false);
 		}
         
 		if(MCO.damage(playerHit))
 			BaseWindow.isRunning = false;
-        
+        if (SB.bars == 0){
+        	BaseWindow.isRunning = false;
+        }
 		float[] cameraPos = camera.getPosition();
         t.setVisibleArea((int) -cameraPos[0], (int) -cameraPos[2],
 				distanceView, angleView, camera.getJaw(), backDistanceView);
