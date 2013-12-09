@@ -36,19 +36,22 @@ public class Refactored extends BaseWindow {
 	float scaleAxe = 0.02f;
 	FPCameraController camera;
 	int enemyNumber = 20;
-
+	int scoreI = 0;
+	
 	Terrain t;
 	ModelCharacterObj MCO;
 	ModelCharacterObj[] enemies;
 	
 	IntBuffer m_Textures;
 	StatusBar SB;
+	Text health;
+	Text score;
 	//ObjectTree OT;
 	//ObjectGrave OG;
 	//ObjectGrave OG1;
 	//ObjectGrave OG2;
 	//WeaponAxeObj AO;
-	//Text text;
+	
 
 	int mouseX, mouseY, oldMouseX, oldMouseY;
 	boolean[] movingDirection = new boolean[4]; // up, right, down, left
@@ -146,13 +149,14 @@ public class Refactored extends BaseWindow {
 		}
 		
 		SB = new StatusBar();
+		health = new Text("Health",40);
+		score = new Text("score" + scoreI,20);
+		
 		//OT = new ObjectTree();
 		//OG = new ObjectGrave(3,posY,10,t);
 		//OG1 = new ObjectGrave(-3,posY,10,t);
 		//OG2 = new ObjectGrave(0,posY,20,t);
 	//	AO = new WeaponAxeObj();
-	//	text = new Text("Health",50);
-		
 		
 		//OT.initializeModel();
 		//OG.initializeModel();
@@ -163,7 +167,7 @@ public class Refactored extends BaseWindow {
 		for(int i = 0; i < enemyNumber; i++) {
 			enemies[i].initializeModel();
 		}
-		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png", "ColorMap_128.png" });
+		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png", "ColorMap_128.png" , "font.png"});
 	}
 
 	/**
@@ -190,21 +194,21 @@ public class Refactored extends BaseWindow {
 		OG1.setScaling(scaleGrave, scaleGrave, scaleGrave);
 		OG2.setScaling(scaleGrave, scaleGrave, scaleGrave);
 		
-		
-		text.setPosition(0, 5, 1);
-		text.setScaling(1f, 1f, 1f);
-		text.render3D();
-		//text.setScaling(5, 5, 5);
-		SB.setPosition(2, 5, 4);*/
 		//AO.setPosition(0, 4, 1);
 		//AO.setScaling(scaleAxe, scaleAxe, scaleAxe);
 		//AO.setRotation(90, -90, 0);
+		 */
 		MCO.setScaling(scaleChar, scaleChar, scaleChar);
 		for(int i = 0; i < enemyNumber; i++) {
 			enemies[i].setScaling(scaleChar, scaleChar, scaleChar);
 		}
+		
 		SB.render3D();
-		//text.render3D();
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(2));
+		score.contentText = "score" + scoreI;
+		//health.render3D();
+		score.render3D();
+		
 		GL11.glMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT_AND_DIFFUSE,
 				allocFloats(new float[] { 1.0f, 1.0f, 0.5f, 0.8f }));
 
@@ -229,13 +233,14 @@ public class Refactored extends BaseWindow {
 	 */
 	
 	int dmg = 0;
-	
+	int sec = 0;
 	protected void processInput() {
 
 		time = Sys.getTime();
+		//System.out.println(time/1000);
 		dt = (time - lastTime) / 1000.0f;
 		lastTime = time;
-
+		sec += (int)(time/1000 -29200);
 		// distance in mouse movement from the last getDX() call.
 		dx = Mouse.getDX();
 		// distance in mouse movement from the last getDY() call.
@@ -370,13 +375,19 @@ public class Refactored extends BaseWindow {
 			if(playerContact){
 				playerHit++;
 				 dmg++;
-				System.out.println((int)(dmg));
-				if (((int)(dmg))%500 == 0){
-					System.out.println("bar -1");
+				//System.out.println((int)(dmg));
+				if (((int)(dmg))%1000 == 0){
+					scoreI -= (SB.bars-SB.bars-1) * 20;
+				//	System.out.println("bar -1");
 					SB.bars -= 1;
 				}
 			}
 			MCO.checkObjCollision(objPos3[0], objPos3[2], enemies[i].getJaw(), false);
+		}
+		
+		if(sec % 300 == 0){
+			scoreI += 10;
+			//System.out.println("score" + scoreI);
 		}
         
 		if(MCO.damage(playerHit))

@@ -29,6 +29,15 @@ public class Text extends Model3D{
 		    GL11.glPushMatrix();
 		    GL11.glLoadIdentity();
 		    GL11.glOrtho(0, 1024, 0, 768, -1, 1);
+		    if (contentText == "Health"){
+		    	//GL11.glTranslatef(0, 70, 0);
+		    }
+		    else{
+		    	GL11.glTranslatef(900, 720, 0);
+		    }
+		   // GL11.glScalef(50, 50, 0);
+		    
+		    //GL11.glEnable(GL11.GL_TEXTURE_2D);
 		    GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		    GL11.glPushMatrix();
 		    GL11.glLoadIdentity();
@@ -52,20 +61,6 @@ public class Text extends Model3D{
 	  private void renderModel()
 	  {
 		  GL11.glColor3f(1, 0, 0);
-		  GL11.glBegin(GL11.GL_QUADS);
-		    for (int i = 0; i < len; i++) {
-		      charCode = text.getCode(contentText.charAt(i));
-//		      GL11.glColor4f(1, 0.0f + (float)i/(float)len, 0, 1f);
-		      GL11.glTexCoord2f(dx+charCode[1]*fw, (charCode[0]+1)*fh);
-		      GL11.glVertex3f(charPos[0], charPos[1], 1);
-		      GL11.glTexCoord2f(dx+(charCode[1]+1)*fw, (charCode[0]+1)*fh);  
-		      GL11.glVertex3f(charPos[0]+ff*fontSize, charPos[1], 1);
-		      GL11.glTexCoord2f(dx+(charCode[1]+1)*fw, charCode[0]*fh);      
-		      GL11.glVertex3f(charPos[0]+ff*fontSize, charPos[1]+fontSize, 1);
-		      GL11.glTexCoord2f(dx+charCode[1]*fw, charCode[0]*fh);          
-		      GL11.glVertex3f(charPos[0], charPos[1]+fontSize, 1);
-		      charPos[0]+=ff*fontSize;
-		    }
-		  GL11.glEnd();
+		  text.renderString(contentText, fontSize);
 	  }
 }

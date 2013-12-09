@@ -1,0 +1,1 @@
+Arhiv je java projekt in se ga importa kot existing project v eclipse.

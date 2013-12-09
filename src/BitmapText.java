@@ -5,7 +5,33 @@ import org.lwjgl.opengl.GL11;
 
 public class BitmapText {
 	 	  
-	  public static int[] getCode(char c) {
+	  float fw = 0.065f, dx = 0.010f, fh = 0.13f, ff = 0.65f;
+	  
+	  public float textWidth(String s, int size) {
+	    return s.length()*size*ff;
+	  }
+	  
+	  public void renderString(String text, int size) {
+	    
+	    int[] charPos = {0, 0};
+	    int[] charCode = {0, 0};
+	    
+	    int len = text.length();
+	    
+	    GL11.glBegin(GL11.GL_QUADS);
+	    for (int i = 0; i < len; i++) {
+	      charCode = getCode(text.charAt(i));
+//	      GL11.glColor4f(1, 0.0f + (float)i/(float)len, 0, 1f);
+	      GL11.glTexCoord2f(dx+charCode[1]*fw, (charCode[0]+1)*fh);      GL11.glVertex3f(charPos[0], charPos[1], 1);
+	      GL11.glTexCoord2f(dx+(charCode[1]+1)*fw, (charCode[0]+1)*fh);  GL11.glVertex3f(charPos[0]+ff*size, charPos[1], 1);
+	      GL11.glTexCoord2f(dx+(charCode[1]+1)*fw, charCode[0]*fh);      GL11.glVertex3f(charPos[0]+ff*size, charPos[1]+size, 1);
+	      GL11.glTexCoord2f(dx+charCode[1]*fw, charCode[0]*fh);          GL11.glVertex3f(charPos[0], charPos[1]+size, 1);
+	      charPos[0]+=ff*size;
+	    }
+	    GL11.glEnd();
+	  }
+	  
+	  private static int[] getCode(char c) {
 	    switch(c) {
 	      case 'a':
 	        return new int[] {0, 0};
