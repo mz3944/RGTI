@@ -299,23 +299,23 @@ public class Refactored extends BaseWindow {
 		}
         // OBJECT move
 		Arrays.fill(movingDirection, false);
-		if (Keyboard.isKeyDown(Keyboard.KEY_I))// move forward
+		if (Keyboard.isKeyDown(Keyboard.KEY_W))// move forward
 		{
 			MCO.walkForward(movementSpeed * dt);
 			movingDirection[0] = true;
 			startedMoving = true;
 		}
-		if (Keyboard.isKeyDown(Keyboard.KEY_K))// move backwards
+		if (Keyboard.isKeyDown(Keyboard.KEY_S))// move backwards
 		{
 			MCO.walkBackwards(movementSpeed * dt);
 			movingDirection[2] = true;
 		}
-		if (Keyboard.isKeyDown(Keyboard.KEY_L))// strafe left
+		if (Keyboard.isKeyDown(Keyboard.KEY_D))// strafe left
 		{
 			MCO.strafeRight(movementSpeed * dt);
 			movingDirection[3] = true;
 		}
-		if (Keyboard.isKeyDown(Keyboard.KEY_J))// strafe right
+		if (Keyboard.isKeyDown(Keyboard.KEY_A))// strafe right
 		{
 			MCO.strafeLeft(movementSpeed * dt);
 			movingDirection[1] = true;
@@ -376,7 +376,7 @@ public class Refactored extends BaseWindow {
 				playerHit++;
 				 dmg++;
 				//System.out.println((int)(dmg));
-				if (((int)(dmg))%1000 == 0){
+				if (((int)(dmg))%300 == 0){
 					scoreI -= (SB.bars-SB.bars-1) * 20;
 				//	System.out.println("bar -1");
 					SB.bars -= 1;
