@@ -6,7 +6,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
-
+//dodani score
 public class Refactored extends BaseWindow {
 
 	float posX = 0, posY = 3, posZ = 0, rotX = 0, rotY = 0, rotZ = 0,
@@ -32,14 +32,18 @@ public class Refactored extends BaseWindow {
 	
 	float scaleChar = 1;
 	float scaleTree = 1f;
-	float scaleGrave = 0.3f;
+	float scaleGrave = 10f;
 	float scaleAxe = 0.02f;
+	float charRad = 1.7f;
+	float graveRad = 1.5f;
 	FPCameraController camera;
-	int enemyNumber = 20;
+	int enemyNumber = 300;
 	int scoreI = 0;
+	float secCounter = 0;
+	int dmgCounter = 0;
 	
 	Terrain t;
-	ModelCharacterObj MCO;
+	ModelCharacterObj player;
 	ModelCharacterObj[] enemies;
 	
 	IntBuffer m_Textures;
@@ -47,11 +51,11 @@ public class Refactored extends BaseWindow {
 	Text health;
 	Text score;
 	//ObjectTree OT;
-	//ObjectGrave OG;
+	ObjectGrave[] OG;
 	//ObjectGrave OG1;
 	//ObjectGrave OG2;
 	//WeaponAxeObj AO;
-	
+	Model m;
 
 	int mouseX, mouseY, oldMouseX, oldMouseY;
 	boolean[] movingDirection = new boolean[4]; // up, right, down, left
@@ -133,9 +137,10 @@ public class Refactored extends BaseWindow {
 		t = new Terrain();
 		t.initialize();
 		
-		MCO = new ModelCharacterObj(posX,posY,posZ);
-		MCO.setIsPlayer(true);
+		player = new ModelCharacterObj(posX,posY,posZ);
+		player.setIsPlayer(true);
 		
+		OG = new ObjectGrave[enemyNumber];
 		enemies = new ModelCharacterObj[enemyNumber];
 		float xMap = t.MAP_X * t.MAP_SCALE;
 		float zMap = t.MAP_Z * t.MAP_SCALE;
@@ -144,8 +149,19 @@ public class Refactored extends BaseWindow {
 		float zMin = -(zMap/2 - distanceView);
 		float zMax = (zMap/2 - distanceView) - 1;
 		for(int i = 0; i < enemyNumber; i++) {
-			enemies[i] = new ModelCharacterObj(getRandomNumber(xMin,xMax), 0, getRandomNumber(zMin,zMax)); //y 0, ker itk checkBounds poskrbi za y
-			enemies[i].setJaw(getRandomNumber(-180, 180));
+			float x = getRandomNumber(xMin,xMax);
+			float z = getRandomNumber(zMin,zMax);
+			OG[i] = new ObjectGrave(x,0,z,t);
+			enemies[i] = new ModelCharacterObj(x, 0, z); //y 0, ker itk checkBounds poskrbi za y
+			float jawRot = 0;
+			OG[i].setJaw(jawRot);
+			enemies[i].CamOnObjPossition(new float[] {x, 0, z}, jawRot);
+	    	float[]objPos = enemies[i].getPosition();
+	    	float[][] triangle = t
+					.getTrinagleLocation(objPos[0], objPos[2]);
+			enemies[i].calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);
+			enemies[i].m_nY -= 8f;
+			enemies[i].setJaw(getRandomNumber(-180,180));
 		}
 		
 		SB = new StatusBar();
@@ -163,10 +179,20 @@ public class Refactored extends BaseWindow {
 		//OG1.initializeModel();
 		//OG2.initializeModel();
 //		AO.initializeModel();
-		MCO.initializeModel();
-		for(int i = 0; i < enemyNumber; i++) {
-			enemies[i].initializeModel();
-		}
+		
+		m = new Model();
+//		String[] objectLocs = {"basemesh_fuse.obj"};// "Tombstone_RIP_obj.obj"};
+		
+		
+		m.addModel(player, "basemesh_fuse.obj", "ColorMap_128.png");
+		m.addModel(enemies, "basemesh_fuse.obj", "ColorMap_128.png");
+		m.addModel(OG, "Tombstone_RIP_obj.obj", "grave.jpg");
+		m.initializeModels();
+		
+//		player.initializeModel();
+//		for(int i = 0; i < enemyNumber; i++) {
+//			enemies[i].initializeModel();
+//		}
 		m_Textures = Texture.loadTextures2D(new String[] { "grass20_128.png", "ColorMap_128.png" , "font.png"});
 	}
 
@@ -185,7 +211,7 @@ public class Refactored extends BaseWindow {
 		t.setPosition(-(t.MAP_X / 2 - 1), 0, -(t.MAP_Z / 2 - 1));
 		t.setRotation(rotX, rotY, rotZ);
 		t.setScaling(scale, scale, scale);
-		//float [] p = MCO.getPosition();
+		//float [] p = player.getPosition();
 		//float [] cam = camera.getPosition();
 		/*OT.setPosition(0, 5, 5);
 		OT.setScaling(scaleTree, scaleTree, scaleTree);
@@ -198,14 +224,16 @@ public class Refactored extends BaseWindow {
 		//AO.setScaling(scaleAxe, scaleAxe, scaleAxe);
 		//AO.setRotation(90, -90, 0);
 		 */
-		MCO.setScaling(scaleChar, scaleChar, scaleChar);
+		player.setScaling(scaleChar, scaleChar, scaleChar);
 		for(int i = 0; i < enemyNumber; i++) {
 			enemies[i].setScaling(scaleChar, scaleChar, scaleChar);
+			OG[i].setScaling(scaleGrave, scaleGrave, scaleGrave);
 		}
+			
 		
 		SB.render3D();
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(2));
-		score.contentText = "score" + scoreI;
+		score.contentText = "score: " + scoreI;
 		//health.render3D();
 		score.render3D();
 		
@@ -216,31 +244,38 @@ public class Refactored extends BaseWindow {
 		t.render3D();
 		
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(1));
-		MCO.render3D();
-		for(int i = 0; i < enemyNumber; i++) {
-			enemies[i].render3D();
-		}
+		
+		m.render3D();
+//		player.render3D();
+//		for(int i = 0; i < enemyNumber; i++) {
+//			enemies[i].render3D();
+//		}
+		
 		//OT.render3D();
 //		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(1));
 //		OG.render3D();
 //		OG1.render3D();
 //		OG2.render3D();
 //		AO.render3D();
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(1));
 	}
 
 	/**
 	 * Processes Keyboard and Mouse input and spawns actions
 	 */
 	
-	int dmg = 0;
-	int sec = 0;
+
+//	int sec = 0;
 	protected void processInput() {
 
 		time = Sys.getTime();
 		//System.out.println(time/1000);
 		dt = (time - lastTime) / 1000.0f;
 		lastTime = time;
-		sec += (int)(time/1000 -29200);
+
+		secCounter += dt;
+		
+//		sec += (int)(time/1000 -29200);
 		// distance in mouse movement from the last getDX() call.
 		dx = Mouse.getDX();
 		// distance in mouse movement from the last getDY() call.
@@ -267,11 +302,11 @@ public class Refactored extends BaseWindow {
 			camera.yaw(movementSpeed * dt);
 		}
 
-		MCO.yaw(mouseSensitivity * -dx);
+		player.yaw(mouseSensitivity * -dx);
 		
 		// controll camera pitch from y movement fromt the mouse
 		camera.pitch(dy * mouseSensitivity);
-		//MCO.pitch(dy * mouseSensitivity);
+		//player.pitch(dy * mouseSensitivity);
 		if (Keyboard.isKeyDown(Keyboard.KEY_W))// move forward
 		{
 			camera.walkForward(movementSpeed * dt);
@@ -291,46 +326,46 @@ public class Refactored extends BaseWindow {
 		// object rotate
 		if (Keyboard.isKeyDown(Keyboard.KEY_U))// move forward
 		{
-			//MCO.yaw(rotateSpeed * dt);
+			//player.yaw(rotateSpeed * dt);
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_O))// move backwards
 		{
-			//MCO.yaw(rotateSpeed * -dt);
+			//player.yaw(rotateSpeed * -dt);
 		}
         // OBJECT move
 		Arrays.fill(movingDirection, false);
 		if (Keyboard.isKeyDown(Keyboard.KEY_W))// move forward
 		{
-			MCO.walkForward(movementSpeed * dt);
+			player.walkForward(movementSpeed * dt);
 			movingDirection[0] = true;
 			startedMoving = true;
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_S))// move backwards
 		{
-			MCO.walkBackwards(movementSpeed * dt);
+			player.walkBackwards(movementSpeed * dt);
 			movingDirection[2] = true;
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_D))// strafe left
 		{
-			MCO.strafeRight(movementSpeed * dt);
+			player.strafeRight(movementSpeed * dt);
 			movingDirection[3] = true;
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_A))// strafe right
 		{
-			MCO.strafeLeft(movementSpeed * dt);
+			player.strafeLeft(movementSpeed * dt);
 			movingDirection[1] = true;
 		}
 		
-		float[] objPos = MCO.getPosition();
+		float[] objPos = player.getPosition();
 		float[][] triangle = t
 				.getTrinagleLocation(objPos[0], objPos[2]);
-		MCO.calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);
-        MCO.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
-    	camera.CamOnObjPossition(MCO.getPosition(), MCO.getJaw());		
-		MCO.setMovingDirection(movingDirection);
+		player.calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);
+        player.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE, distanceView);
+    	camera.CamOnObjPossition(player.getPosition(), player.getJaw());		
+		player.setMovingDirection(movingDirection);
 
         int playerHit = 0;
-		for(int i = 0; i < enemyNumber; i++) {
+		for(int i = 0; i < m.enemyNumberRender; i++) {
 	    	float[]objPos3 = enemies[i].getPosition();
 			triangle = t
 					.getTrinagleLocation(objPos3[0], objPos3[2]);
@@ -345,10 +380,12 @@ public class Refactored extends BaseWindow {
 			for(int j = 0; j < enemyNumber; j++) {
 				if(j != i) {
 					float[]tempObjPos = enemies[j].getPosition();
-					enemies[i].checkObjCollision(tempObjPos[0], tempObjPos[2], enemies[j].getJaw(), false);
+					enemies[i].checkObjCollision(tempObjPos[0], tempObjPos[2], enemies[j].getJaw(), charRad, false);
 				}
 			}
-
+			for(int j = 0; j < enemyNumber; j++)
+				enemies[i].checkObjCollision(OG[j].m_nX, OG[j].m_nZ, 0, graveRad, false);
+			
 			//kolizija nasprotnika z igralcem
 			float playerDistance = enemies[i].getDistance(objPos[0], objPos[2]);
 			boolean playerContact = false;
@@ -368,29 +405,36 @@ public class Refactored extends BaseWindow {
 				newAngle = (float) Math.toDegrees(45-(newAngle-45));
 				enemies[i].setJaw(newAngle);
 
-				playerContact = enemies[i].checkObjCollision(objPos[0], objPos[2], MCO.getJaw(), true);
+				playerContact = enemies[i].checkObjCollision(objPos[0], objPos[2], player.getJaw(), charRad, true);
 			}
 			if(!playerContact && startedMoving)
-				enemies[i].walkForward(movementSpeed * dt/2);
+				enemies[i].walkForward(movementSpeed * dt);
 			if(playerContact){
 				playerHit++;
-				 dmg++;
+				 dmgCounter++;
 				//System.out.println((int)(dmg));
-				if (((int)(dmg))%300 == 0){
-					scoreI -= (SB.bars-SB.bars-1) * 20;
+//				if (((int)(dmg))%300 < 4){
+				 if(dmgCounter >= 50) {
+//					scoreI -= (SB.bars-SB.bars-1) * 20;
 				//	System.out.println("bar -1");
 					SB.bars -= 1;
-				}
+					dmgCounter = 0;
+				 }
+//				}
 			}
-			MCO.checkObjCollision(objPos3[0], objPos3[2], enemies[i].getJaw(), false);
+			//player.checkObjCollision(objPos3[0], objPos3[2], enemies[i].getJaw(), charRad, false); !!!!!!!!!!!!!!!!!!!! ---> ce to omogocimo, nas tudi sovrazniki lahko nas premikajo!
 		}
+		for(int i = 0; i < enemyNumber; i++)
+			player.checkObjCollision(OG[i].m_nX, OG[i].m_nZ,0, graveRad, false);
 		
-		if(sec % 300 == 0){
-			scoreI += 10;
+		if(secCounter >= 1.0f && startedMoving) {
+			m.addEnemyRender();
+			scoreI += 1;
+			secCounter = 0;
 			//System.out.println("score" + scoreI);
 		}
         
-		if(MCO.damage(playerHit))
+		if(player.damage(playerHit))
 			BaseWindow.isRunning = false;
         if (SB.bars == 0){
         	BaseWindow.isRunning = false;

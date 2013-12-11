@@ -13,7 +13,7 @@ import org.lwjgl.util.glu.GLU;
 
 
 public class StatusBar extends Model3D{
-	int bars = 4;
+	int bars = 100;
 	
 	public StatusBar(){
 	}
@@ -46,8 +46,8 @@ public class StatusBar extends Model3D{
 		GL11.glBegin(GL11.GL_QUAD_STRIP); // draw triangels
 		GL11.glColor3f(1, 0, 0);
 		for (int i = 0; i < bars; i++){
-			float dx = i * 40f;
-			GL11.glVertex2f(20f+dx, 20);
+			float dx = i * 1f;
+			GL11.glVertex2f(20f+dx, 20f);
 			GL11.glVertex2f(60f+dx, 20f);
 			GL11.glVertex2f(20f+dx, 60f);
 			GL11.glVertex2f(60f+dx, 60f);

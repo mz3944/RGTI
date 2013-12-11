@@ -33,7 +33,7 @@ public class Text extends Model3D{
 		    	//GL11.glTranslatef(0, 70, 0);
 		    }
 		    else{
-		    	GL11.glTranslatef(900, 720, 0);
+		    	GL11.glTranslatef(870, 720, 0);
 		    }
 		   // GL11.glScalef(50, 50, 0);
 		    

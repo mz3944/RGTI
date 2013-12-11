@@ -5,9 +5,17 @@ public abstract class Model3D
   protected float m_rX, m_rY, m_rZ;
   protected float m_sX=1, m_sY=1, m_sZ=1;
   
+  protected float yaw = 0.0f;
+	// the rotation around the X axis of the camera
+  protected float pitch = 0.0f;
+	
   public void setPosition(float p_X, float p_Y, float p_Z)
   {
     m_nX=p_X; m_nY=p_Y; m_nZ=p_Z;
+  }
+  public float[] getPosition()
+  {
+    return new float[] {m_nX, m_nY, m_nZ};
   }
   public void setRotation(float p_X, float p_Y, float p_Z)
   {
@@ -17,6 +25,59 @@ public abstract class Model3D
   {
     m_sX=p_X; m_sY=p_Y; m_sZ=p_Z;
   }
+  
+  
+	// increment the camera's current yaw rotation
+	public void yaw(float amount) {
+		// increment the yaw by the amount param
+		yaw += amount;
+	}
+	
+	public float getJaw() {
+		return yaw;
+	}
+	
+	public void setJaw(float yaw) {
+		this.yaw = yaw;
+	}
+
+	// increment the camera's current yaw rotation
+	public void pitch(float amount) {
+		// increment the pitch by the amount param
+		pitch -= amount;
+		if(pitch > 45)
+			pitch = 45;
+		else if(pitch < -45)
+			pitch = -45;
+	}
+	
+	public float getPitch(){
+		return pitch;
+	}
+	
+	// moves the camera forward relative to its current rotation (yaw)
+	public void walkForward(float distance) {
+		m_nX += distance * (float) Math.sin(Math.toRadians(yaw));
+		m_nZ += distance * (float) Math.cos(Math.toRadians(yaw));
+	}
+
+	// moves the camera backward relative to its current rotation (yaw)
+	public void walkBackwards(float distance) {
+		m_nX += distance * (float) Math.sin(Math.toRadians(yaw + 180));
+		m_nZ += distance * (float) Math.cos(Math.toRadians(yaw + 180));
+	}
+
+	// strafes the camera left relitive to its current rotation (yaw)
+	public void strafeLeft(float distance) {
+		m_nX += distance * (float) Math.sin(Math.toRadians(yaw + 90));
+		m_nZ += distance * (float) Math.cos(Math.toRadians(yaw + 90));
+	}
+
+	// strafes the camera right relitive to its current rotation (yaw)
+	public void strafeRight(float distance) {
+		m_nX += distance * (float) Math.sin(Math.toRadians(yaw - 90));
+		m_nZ += distance * (float) Math.cos(Math.toRadians(yaw - 90));
+	}
   
   public abstract void render3D();
   
