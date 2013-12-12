@@ -1,6 +1,5 @@
 import org.lwjgl.opengl.GL11;
 
-
 public class Text extends Model3D{
 	  
 	  BitmapText text;
@@ -29,15 +28,8 @@ public class Text extends Model3D{
 		    GL11.glPushMatrix();
 		    GL11.glLoadIdentity();
 		    GL11.glOrtho(0, 1024, 0, 768, -1, 1);
-		    if (contentText == "Health"){
-		    	//GL11.glTranslatef(0, 70, 0);
-		    }
-		    else{
+		    if (contentText != "Health")
 		    	GL11.glTranslatef(870, 720, 0);
-		    }
-		   // GL11.glScalef(50, 50, 0);
-		    
-		    //GL11.glEnable(GL11.GL_TEXTURE_2D);
 		    GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		    GL11.glPushMatrix();
 		    GL11.glLoadIdentity();
@@ -50,7 +42,6 @@ public class Text extends Model3D{
 	    GL11.glPopMatrix();
 	  }
 
-	  @Override
 	  public void render3D()
 	  {
 		startHUD();

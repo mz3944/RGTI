@@ -1,15 +1,13 @@
-import org.lwjgl.*;
-import org.lwjgl.opengl.*;
-import org.lwjgl.util.glu.GLU;
-import org.lwjgl.input.*;
-
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.nio.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -19,102 +17,82 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import org.lwjgl.LWJGLException;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.DisplayMode;
+import org.lwjgl.opengl.PixelFormat;
+
 public class BaseWindow implements ActionListener {
-	int MAP_X;
-	int MAP_Z;
-	float MAP_SCALE = 3.0f; // the scale of the terrain map
-	// ////Terrain Data
-	float[][][] terrain; // heightfield terrain data (0-255); 256x256
-
-	float angle = 0.0f; // camera angle
-	float radians = 0.0f; // camera angle in radians
-
-	// //// Mouse/Camera Variables
-	int mouseX, mouseY; // mouse coordinates
-	float cameraX, cameraY, cameraZ; // camera coordinates
-	float lookX, lookY, lookZ; // camera look-at coordinates
 
 	protected static boolean isRunning = false;
 
-	
 	private JButton start;
-    private JButton credits;
-    private JButton exit;
-    private JButton back;
-    private ImageIcon image1;
-    private ImageIcon image2;
-    private ImageIcon image3;
-    private ImageIcon image4;
-    
-    JFrame frame = new JFrame("RGTI Igra");
-    JFrame c = new JFrame("Credits");
-    
-    private void displayGUI()
-    {
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1024,768);
+	private JButton credits;
+	private JButton exit;
+	private JButton back;
+	private ImageIcon image1;
+	private ImageIcon image2;
+	private ImageIcon image3;
+	private ImageIcon image4;
 
-        JPanel contentPane = new JPanel();
-        try
-        {
-            image1 = new ImageIcon(ImageIO.read(
-                    new File("start.png")));
-            image2 = new ImageIcon(ImageIO.read(
-                    new File("credits3.png")));
-            image3 = new ImageIcon(ImageIO.read(
-                    new File("exit.png")));
-            image4 = new ImageIcon(ImageIO.read(
-                    new File("back.png")));
-        }
-        catch(MalformedURLException mue)
-        {
-            mue.printStackTrace();
-        }
-        catch(IOException ioe)
-        {
-            ioe.printStackTrace();
-        }       
+	JFrame frame = new JFrame("Get me out of here!");
+	JFrame c = new JFrame("Credits");
 
-        start = new JButton();
-        start.setIcon(image1);
-        start.addActionListener(this);
-        credits = new JButton();
-        credits.setIcon(image2);
-        credits.addActionListener(this);
-        exit = new JButton();
-        exit.setIcon(image3);
-        exit.addActionListener(this);
-        contentPane.setBackground(Color.black);
-        contentPane.add(start);
-        contentPane.add(credits);
-        contentPane.add(exit);
-        frame.setContentPane(contentPane);
-        frame.pack();
-        frame.setLocationByPlatform(true);
-        frame.setVisible(true);
-    }
+	private void displayGUI() {
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setSize(1024, 768);
 
-    public static void main(String... args)
-    {
-        SwingUtilities.invokeLater(new Runnable()
-        {
-            public void run()
-            {
-                new BaseWindow().displayGUI();
-            }
-        });
-    }
+		JPanel contentPane = new JPanel();
+		try {
+			image1 = new ImageIcon(ImageIO.read(new File("start.png")));
+			image2 = new ImageIcon(ImageIO.read(new File("credits3.png")));
+			image3 = new ImageIcon(ImageIO.read(new File("exit.png")));
+			image4 = new ImageIcon(ImageIO.read(new File("back.png")));
+		} catch (MalformedURLException mue) {
+			mue.printStackTrace();
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
 
+		start = new JButton();
+		start.setIcon(image1);
+		start.addActionListener(this);
+		credits = new JButton();
+		credits.setIcon(image2);
+		credits.addActionListener(this);
+		exit = new JButton();
+		exit.setIcon(image3);
+		exit.addActionListener(this);
+		contentPane.setBackground(Color.black);
+		contentPane.add(start);
+		contentPane.add(credits);
+		contentPane.add(exit);
+		frame.setContentPane(contentPane);
+		frame.pack();
+		frame.setLocationByPlatform(true);
+		frame.setVisible(true);
+	}
+
+	public static void main(String... args) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				new BaseWindow().displayGUI();
+			}
+		});
+	}
+
+	@SuppressWarnings("static-access")
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		JPanel cred = new JPanel();
-		
-		if (event.getSource() == exit){
+
+		if (event.getSource() == exit) {
 			System.exit(0);
 		}
-		if (event.getSource() == credits){
+		if (event.getSource() == credits) {
 			frame.setVisible(false);
-			c.setSize(1024,768);
+			c.setSize(1024, 768);
 			cred.setBackground(Color.black);
 			back = new JButton();
 			back.setIcon(image4);
@@ -125,16 +103,16 @@ public class BaseWindow implements ActionListener {
 			cred.add(back);
 			c.setContentPane(cred);
 			c.pack();
-	        c.setLocationByPlatform(true);
-	        c.setVisible(true);			
+			c.setLocationByPlatform(true);
+			c.setVisible(true);
 		}
-		if (event.getSource() == back){
+		if (event.getSource() == back) {
 			frame.setVisible(true);
 			c.setVisible(false);
 		}
-		if (event.getSource() == start){
+		if (event.getSource() == start) {
 			frame.setVisible(false);
-			(new Refactored()).main(null);
+			(new Main()).main(null);
 		}
 	}
 
@@ -194,7 +172,7 @@ public class BaseWindow implements ActionListener {
 	 * Renders current frame
 	 */
 	protected void renderFrame() {
-		
+
 	}
 
 	/**
@@ -205,8 +183,7 @@ public class BaseWindow implements ActionListener {
 				|| Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
 			BaseWindow.isRunning = false;
 		}
-		
-		
+
 	}
 
 	/**
@@ -234,7 +211,7 @@ public class BaseWindow implements ActionListener {
 		Display.create(new PixelFormat(8, 8, 8, 4));
 		// No FSAA
 		// Display.create();
-		Display.setTitle(this.getClass().getName());
+		Display.setTitle("Get me out of here!");
 	}
 
 	/**

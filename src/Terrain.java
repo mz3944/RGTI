@@ -1,13 +1,5 @@
-//import java.awt.Point;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.lwjgl.opengl.GL11;
@@ -51,7 +43,7 @@ public class Terrain extends Model3D {
 		if (m_sX != 1 || m_sY != 1 || m_sZ != 1)
 			GL11.glScalef(m_sX, m_sY, m_sZ);
 		GL11.glTranslatef(0, 0, 3.5f);
-//		GL11.glTranslatef(m_nX, m_nY, m_nZ);
+		// GL11.glTranslatef(m_nX, m_nY, m_nZ);
 
 		renderModel();
 
@@ -60,17 +52,15 @@ public class Terrain extends Model3D {
 	}
 
 	private void renderModel() {
-		TreeSet<Point> drawablePixels = DrawCircle();
-
-		int faceCnt = 0;
+		TreeSet<Point> drawablePixels = DrawCirclePart();
 		int lastY = -1;
 		int lastX = -1;
-		Iterator iter = drawablePixels.iterator();
+		Iterator<Point> iter = drawablePixels.iterator();
 		GL11.glBegin(GL11.GL_TRIANGLE_STRIP);
 		float a = 0.0f;
 
 		while (iter.hasNext()) {
-			Point u = (Point) iter.next();
+			Point u = iter.next();
 			int z = u.y;
 
 			if (lastY > -1 && lastY != z) {
@@ -89,7 +79,6 @@ public class Terrain extends Model3D {
 			GL11.glTexCoord2f(a, 0.0f);
 			GL11.glVertex3f(terrain[z][x][0], terrain[z][x][1],
 					terrain[z][x][2]);
-			faceCnt++;
 
 			GL11.glNormal3f(vertexNormals[z + 1][x][0],
 					vertexNormals[z + 1][x][1], vertexNormals[z + 1][x][2]);
@@ -97,12 +86,11 @@ public class Terrain extends Model3D {
 			GL11.glVertex3f(terrain[z + 1][x][0], terrain[z + 1][x][1],
 					terrain[z + 1][x][2]);
 
-			faceCnt++;
 			a = (a + 1.0f) % 2.0f;
 			lastY = u.y;
 			lastX = u.x;
 
-			iter.remove(); // avoids a ConcurrentModificationException
+			iter.remove();
 		}
 		GL11.glEnd();
 	}
@@ -231,8 +219,7 @@ public class Terrain extends Model3D {
 
 	public float[][] getTrinagleLocation(float x, float y) {
 		float[][] source = getTrinagle(x, y);
-		float[][] triangle = new float[3][3]; // =
-												// Arrays.copyOf(getTrinagle(x,y));
+		float[][] triangle = new float[3][3];
 
 		for (int i = 0; i < source.length; i++)
 			System.arraycopy(source[i], 0, triangle[i], 0, source[0].length);
@@ -247,8 +234,7 @@ public class Terrain extends Model3D {
 		return triangle;
 	}
 
-	public TreeSet<Point> DrawCircle() {
-		Point a;
+	public TreeSet<Point> DrawCirclePart() {
 		TreeSet<Point> drawablePixels2 = new TreeSet<Point>();
 
 		int x = radius, y = 0;
@@ -287,12 +273,12 @@ public class Terrain extends Model3D {
 				radiusError += 2 * (y - x + 1);
 			}
 		}
-		Iterator it = drawablePixels2.iterator();
+		Iterator<Point> it = drawablePixels2.iterator();
 		boolean found = false;
 		int newX = 0;
 		int newY = 0;
 		while (it.hasNext() && !found) {
-			Point u = (Point) it.next();
+			Point u = it.next();
 			newX = u.x;
 			newY = u.y;
 
@@ -347,11 +333,6 @@ public class Terrain extends Model3D {
 
 		this.x0 += backDist * (float) Math.sin(Math.toRadians(angle));
 		this.y0 -= backDist * (float) Math.cos(Math.toRadians(angle));
-	}
-
-	public HashSet<Point> getCircleSlice(HashSet<Point> drawablePixels) {
-
-		return drawablePixels;
 	}
 
 	public TreeSet<Point> recurs(int x, int y, TreeSet<Point> drawablePixels,

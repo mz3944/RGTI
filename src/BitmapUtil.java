@@ -1,8 +1,8 @@
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 
-//import gpdraw.*;
-
-public class BitmapUtil { // za 1 pixel sam ne dela!!!! popravi...
+public class BitmapUtil {
 
 	// Identity the file
 	private short header;
@@ -66,6 +66,8 @@ public class BitmapUtil { // za 1 pixel sam ne dela!!!! popravi...
 						nextInt = Integer.reverseBytes(d.readInt());
 				}
 			}
+
+			d.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
