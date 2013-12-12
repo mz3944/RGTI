@@ -4,6 +4,7 @@ import java.util.Arrays;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 
@@ -45,8 +46,8 @@ public class Main extends BaseWindow {
 
 	IntBuffer m_Textures;
 	StatusBar SB;
-	Text health;
 	Text score;
+	Text end;
 
 	boolean[] movingDirection = new boolean[4]; // forward, right, backward, left
 	boolean startedMoving = false;
@@ -157,8 +158,8 @@ public class Main extends BaseWindow {
 		}
 
 		SB = new StatusBar();
-		health = new Text("Health", 40);
-		score = new Text("score" + scoreI, 20);
+		score = new Text("score", 20);
+		end = new Text("end", 40);
 
 		m = new ModelRender();
 		m.addModel(player, "basemesh_fuse.obj", "ColorMap_128.png");
@@ -182,18 +183,27 @@ public class Main extends BaseWindow {
 	 * Renders current frame
 	 */
 	protected void renderFrame() {
-		SB.render3D();
-		
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(1));
-		score.contentText = "score: " + scoreI;
-		score.render3D();
-
-		GL11.glMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT_AND_DIFFUSE,
-				allocFloats(new float[] { 1.0f, 1.0f, 0.5f, 0.8f }));
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(0));
-		t.render3D();
-
-		m.render3D();
+		if(SB.bars <= 0) {
+			GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(1));
+			end.contentText = "You died! Your score was: " + scoreI;
+			end.render3D();
+		}
+//		else {
+			SB.render3D();
+			
+			GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(1));
+			score.contentText = "score: " + scoreI;
+			score.render3D();
+			
+	
+	
+			GL11.glMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT_AND_DIFFUSE,
+					allocFloats(new float[] { 1.0f, 1.0f, 0.5f, 0.8f }));
+			GL11.glBindTexture(GL11.GL_TEXTURE_2D, m_Textures.get(0));
+			t.render3D();
+	
+			m.render3D();
+//		}
 	}
 
 	/**
@@ -201,147 +211,148 @@ public class Main extends BaseWindow {
 	 */
 
 	protected void processInput() {
-
-		time = Sys.getTime();
-		dt = (time - lastTime) / 1000.0f;
-		lastTime = time;
-
-		secCounter += dt;
-
-		// distance in mouse movement from the last getDX() call
-		dx = Mouse.getDX();
-		// distance in mouse movement from the last getDY() call
-		dy = Mouse.getDY();
-
-		// sets view
-		int dWheel = Mouse.getDWheel();
-		int scr = 0;
-		if (dWheel < 0)
-			scr = -1;
-		else if (dWheel > 0)
-			scr = 1;
-
-		camera.setDist2obj(scr);
-
-		// control camera yaw from y movement fromt the mouse
-		player.yaw(mouseSensitivity * -dx);
-
-		// control camera pitch from y movement fromt the mouse
-		camera.pitch(dy * mouseSensitivity);
-
-		// player move
-		Arrays.fill(movingDirection, false);
-		if (Keyboard.isKeyDown(Keyboard.KEY_W))// move forward
-		{
-			player.walkForward(movementSpeed * dt);
-			movingDirection[0] = true;
-			startedMoving = true;
-		}
-		if (Keyboard.isKeyDown(Keyboard.KEY_S))// move backwards
-		{
-			player.walkBackwards(movementSpeed * dt);
-			movingDirection[2] = true;
-		}
-		if (Keyboard.isKeyDown(Keyboard.KEY_D))// move left
-		{
-			player.strafeRight(movementSpeed * dt);
-			movingDirection[3] = true;
-		}
-		if (Keyboard.isKeyDown(Keyboard.KEY_A))// move right
-		{
-			player.strafeLeft(movementSpeed * dt);
-			movingDirection[1] = true;
-		}
-
-		float[] objPos = player.getPosition();
-		float[][] triangle = t.getTrinagleLocation(objPos[0], objPos[2]);
-		player.calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);
-		player.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE,
-				distanceView);
-		camera.CamOnObjPossition(player.getPosition(), player.getJaw());
-		player.setMovingDirection(movingDirection);
-
-		for (int i = 0; i < m.enemyNumberRender; i++) {
-			float[] objPos3 = enemies[i].getPosition();
-			triangle = t.getTrinagleLocation(objPos3[0], objPos3[2]);
-			enemies[i].calcY(triangle[0], triangle[1], triangle[2], t.MAP_X,
-					t.MAP_Z);
-			boolean overBounds = enemies[i].checkBounds(t.MAP_X * t.MAP_SCALE,
-					t.MAP_Z * t.MAP_SCALE, distanceView);
-			if (overBounds)
-				enemies[i].setJaw(getRandomNumber(-180, 180));
-			enemies[i].setIsMoving(true);
-			enemies[i].updateWait(dt);
-
-			// collision between enemies
-			for (int j = 0; j < enemyNumber; j++) {
-				if (j != i) {
-					float[] tempObjPos = enemies[j].getPosition();
-					enemies[i].checkObjCollision(tempObjPos[0], tempObjPos[2],
-							enemies[j].getJaw(), charRad, false);
-				}
-			}
-			for (int j = 0; j < enemyNumber; j++)
-				enemies[i].checkObjCollision(OG[j].m_nX, OG[j].m_nZ, 0,
-						graveRad, false);
-
-			// collision between enemies and player
-			float playerDistance = enemies[i].getDistance(objPos[0], objPos[2]);
-			boolean playerContact = false;
-			if (playerDistance <= followPlayerRange) {
-				float[] directionVec = new float[2];
-				directionVec[0] = (objPos[0]) - (objPos3[0]);
-				directionVec[1] = (objPos[2]) - (objPos3[2]);
-
-				float length = (float) Math.sqrt(directionVec[0]
-						* directionVec[0] + directionVec[1] * directionVec[1]);
-				if (length != 0) {
-					directionVec[0] = directionVec[0] / length;
-					directionVec[1] = directionVec[1] / length;
-				}
-
-				float newAngle = (float) Math.atan2(directionVec[1],
-						directionVec[0]);
-
-				newAngle = (float) Math.toDegrees(45 - (newAngle - 45));
-				enemies[i].setJaw(newAngle);
-
-				playerContact = enemies[i].checkObjCollision(objPos[0],
-						objPos[2], player.getJaw(), charRad, true);
-			}
-			
-			if (!playerContact && startedMoving)
-				enemies[i].walkForward(movementSpeed * dt);
-			
-			if (playerContact) {
-				dmgCounter++;
-				if (dmgCounter >= 50) {
-					SB.bars -= 1;
-					dmgCounter = 0;
-				}
-			}
-		}
-		for (int i = 0; i < enemyNumber; i++)
-			player.checkObjCollision(OG[i].m_nX, OG[i].m_nZ, 0, graveRad, false);
-
-		if (secCounter >= 1.0f && startedMoving) {
-			m.addEnemyRender();
-			scoreI += 1;
-			secCounter = 0;
-		}
-
-		if (SB.bars <= 0)
+		if (Display.isCloseRequested()
+				|| Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
 			Main.isRunning = false;
-
-		float[] cameraPos = camera.getPosition();
-		t.setVisibleArea((int) -cameraPos[0], (int) -cameraPos[2],
-				distanceView, angleView, camera.getJaw(), backDistanceView);
-
-		// set the modelview matrix back to the identity
-		GL11.glLoadIdentity();
-
-		camera.lookThrough();
-		super.processInput();
+		}
+		if(SB.bars > 0) {
+			time = Sys.getTime();
+			dt = (time - lastTime) / 1000.0f;
+			lastTime = time;
+	
+			secCounter += dt;
+	
+			// distance in mouse movement from the last getDX() call
+			dx = Mouse.getDX();
+			// distance in mouse movement from the last getDY() call
+			dy = Mouse.getDY();
+	
+			// sets view
+			int dWheel = Mouse.getDWheel();
+			int scr = 0;
+			if (dWheel < 0)
+				scr = -1;
+			else if (dWheel > 0)
+				scr = 1;
+	
+			camera.setDist2obj(scr);
+	
+			// control camera yaw from y movement fromt the mouse
+			player.yaw(mouseSensitivity * -dx);
+	
+			// control camera pitch from y movement fromt the mouse
+			camera.pitch(dy * mouseSensitivity);
+	
+			// player move
+			Arrays.fill(movingDirection, false);
+			if (Keyboard.isKeyDown(Keyboard.KEY_W))// move forward
+			{
+				player.walkForward(movementSpeed * dt);
+				movingDirection[0] = true;
+				startedMoving = true;
+			}
+			if (Keyboard.isKeyDown(Keyboard.KEY_S))// move backwards
+			{
+				player.walkBackwards(movementSpeed * dt);
+				movingDirection[2] = true;
+			}
+			if (Keyboard.isKeyDown(Keyboard.KEY_D))// move left
+			{
+				player.strafeRight(movementSpeed * dt);
+				movingDirection[3] = true;
+			}
+			if (Keyboard.isKeyDown(Keyboard.KEY_A))// move right
+			{
+				player.strafeLeft(movementSpeed * dt);
+				movingDirection[1] = true;
+			}
+	
+			float[] objPos = player.getPosition();
+			float[][] triangle = t.getTrinagleLocation(objPos[0], objPos[2]);
+			player.calcY(triangle[0], triangle[1], triangle[2], t.MAP_X, t.MAP_Z);
+			player.checkBounds(t.MAP_X * t.MAP_SCALE, t.MAP_Z * t.MAP_SCALE,
+					distanceView);
+			camera.CamOnObjPossition(player.getPosition(), player.getJaw());
+			player.setMovingDirection(movingDirection);
+	
+			for (int i = 0; i < m.enemyNumberRender; i++) {
+				float[] objPos3 = enemies[i].getPosition();
+				triangle = t.getTrinagleLocation(objPos3[0], objPos3[2]);
+				enemies[i].calcY(triangle[0], triangle[1], triangle[2], t.MAP_X,
+						t.MAP_Z);
+				boolean overBounds = enemies[i].checkBounds(t.MAP_X * t.MAP_SCALE,
+						t.MAP_Z * t.MAP_SCALE, distanceView);
+				if (overBounds)
+					enemies[i].setJaw(getRandomNumber(-180, 180));
+				enemies[i].setIsMoving(true);
+				enemies[i].updateWait(dt);
+	
+				// collision between enemies
+				for (int j = 0; j < enemyNumber; j++) {
+					if (j != i) {
+						float[] tempObjPos = enemies[j].getPosition();
+						enemies[i].checkObjCollision(tempObjPos[0], tempObjPos[2],
+								enemies[j].getJaw(), charRad, false);
+					}
+				}
+				for (int j = 0; j < enemyNumber; j++)
+					enemies[i].checkObjCollision(OG[j].m_nX, OG[j].m_nZ, 0,
+							graveRad, false);
+	
+				// collision between enemies and player
+				float playerDistance = enemies[i].getDistance(objPos[0], objPos[2]);
+				boolean playerContact = false;
+				if (playerDistance <= followPlayerRange) {
+					float[] directionVec = new float[2];
+					directionVec[0] = (objPos[0]) - (objPos3[0]);
+					directionVec[1] = (objPos[2]) - (objPos3[2]);
+	
+					float length = (float) Math.sqrt(directionVec[0]
+							* directionVec[0] + directionVec[1] * directionVec[1]);
+					if (length != 0) {
+						directionVec[0] = directionVec[0] / length;
+						directionVec[1] = directionVec[1] / length;
+					}
+	
+					float newAngle = (float) Math.atan2(directionVec[1],
+							directionVec[0]);
+	
+					newAngle = (float) Math.toDegrees(45 - (newAngle - 45));
+					enemies[i].setJaw(newAngle);
+	
+					playerContact = enemies[i].checkObjCollision(objPos[0],
+							objPos[2], player.getJaw(), charRad, true);
+				}
+				
+				if (!playerContact && startedMoving)
+					enemies[i].walkForward(movementSpeed * dt);
+				
+				if (playerContact) {
+					dmgCounter++;
+					if (dmgCounter >= 50) {
+						SB.bars -= 1;
+						dmgCounter = 0;
+					}
+				}
+			}
+			for (int i = 0; i < enemyNumber; i++)
+				player.checkObjCollision(OG[i].m_nX, OG[i].m_nZ, 0, graveRad, false);
+	
+			if (secCounter >= 1.0f && startedMoving) {
+				m.addEnemyRender();
+				scoreI += 1;
+				secCounter = 0;
+			}
+	
+			float[] cameraPos = camera.getPosition();
+			t.setVisibleArea((int) -cameraPos[0], (int) -cameraPos[2],
+					distanceView, angleView, camera.getJaw(), backDistanceView);
+	
+			// set the modelview matrix back to the identity
+			GL11.glLoadIdentity();
+	
+			camera.lookThrough();
+		}
 	}
 
 	public static float getRandomNumber(float min, float max) {

@@ -183,7 +183,6 @@ public class BaseWindow implements ActionListener {
 				|| Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
 			BaseWindow.isRunning = false;
 		}
-
 	}
 
 	/**

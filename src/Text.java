@@ -4,6 +4,7 @@ public class Text extends Model3D{
 	  
 	  BitmapText text;
 	  String contentText = "";
+	  String content = "";
 	  int fontSize = 10;
 	  float fw = 0.065f, dx = 0.010f, fh = 0.13f, ff = 0.65f;
 	  int[] charPos = {0, 0};
@@ -18,7 +19,7 @@ public class Text extends Model3D{
 	  public Text(String content, int size) {
 	    super();
 	    text = new BitmapText();
-	    contentText = content;
+	    this.content = content;
 	    len = contentText.length();
 	    fontSize = size;
 	  }
@@ -28,8 +29,10 @@ public class Text extends Model3D{
 		    GL11.glPushMatrix();
 		    GL11.glLoadIdentity();
 		    GL11.glOrtho(0, 1024, 0, 768, -1, 1);
-		    if (contentText != "Health")
+		    if (content == "score")
 		    	GL11.glTranslatef(870, 720, 0);
+		    else if (content == "end")
+		    	GL11.glTranslatef(150, 350, 0);
 		    GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		    GL11.glPushMatrix();
 		    GL11.glLoadIdentity();
